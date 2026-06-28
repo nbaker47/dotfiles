@@ -51,6 +51,22 @@ link karabiner/karabiner.json "$HOME/.config/karabiner/karabiner.json"
 # git
 link git/gitconfig "$HOME/.gitconfig"
 
+# Agent skills — vendored content lives in the repo; symlinking ~/.agents/skills
+# back into it means future `npx skills add ...` installs auto-track in git.
+link agents/skill-lock.json "$HOME/.agents/.skill-lock.json"
+link agents/skills          "$HOME/.agents/skills"
+# Recreate the per-skill symlinks Claude Code reads from ~/.claude/skills/<name>
+if [ -d "$REPO/agents/skills" ]; then
+  mkdir -p "$HOME/.claude/skills"
+  n=0
+  for d in "$REPO/agents/skills"/*/; do
+    name="$(basename "$d")"; target="../../.agents/skills/$name"; lnk="$HOME/.claude/skills/$name"
+    if [ -L "$lnk" ] && [ "$(readlink "$lnk")" = "$target" ]; then continue; fi
+    rm -rf "$lnk"; ln -s "$target" "$lnk"; n=$((n+1))
+  done
+  echo "==> Skills linked into ~/.claude/skills (refreshed $n)"
+fi
+
 # iTerm2 — can't symlink the plist (iTerm rewrites it); instead point iTerm at
 # the repo's iterm/ folder as its prefs source. iTerm reads on launch, writes on
 # quit, so the yaquake dropdown + keymaps stay versioned automatically.

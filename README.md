@@ -26,6 +26,8 @@ shell, and run `grid` for the 2×2 Claude tmux layout.
 | `tmux/tmux.conf` | `~/.tmux.conf` | mouse on; `prefix+e` + auto re-tile to a clean 2×2 grid |
 | `karabiner/karabiner.json` | `~/.config/karabiner/karabiner.json` | Karabiner-Elements: SEFD arrows + JKL modifiers nav layer (hold `;`) |
 | `git/gitconfig` | `~/.gitconfig` | git identity/config |
+| `agents/skills/` | `~/.agents/skills` | Agent skills (vendored). `~/.claude/skills/<name>` symlinks are rebuilt by bootstrap. New `npx skills add ...` installs land here and auto-track. |
+| `agents/skill-lock.json` | `~/.agents/.skill-lock.json` | Skill install manifest |
 | `iterm/com.googlecode.iterm2.plist` | *iTerm custom prefs folder* | iTerm2 — **yaquake** dropdown profile (hotkey), keymaps, profiles |
 
 ## How each piece syncs
