@@ -22,3 +22,7 @@
 - Live files converted to symlinks; iTerm pointed at repo's `iterm/` folder.
 - Global `~/.claude/CLAUDE.md` gained: parallel-session comm (`~/.claude/comm/`) +
   Conventional Commits block.
+
+## /brief skill follow-ups
+- [ ] Live-test `/brief` end-to-end (run against the 2026-06-28 IHS commits). Untested so far.
+- [ ] Confirm claude-in-chrome screenshots actually land as PNGs in ~/Code/briefs/assets/<date>/ — the SKILL assumes a saved-file path; adjust wording if the tool returns inline images only.
