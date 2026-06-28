@@ -1,0 +1,7 @@
+# This is Git's per-user configuration file.
+[user]
+# Please adapt and uncomment the following lines:
+	name = nbaker47
+	email = nathan.baker.2647@gmail.com
+[alias]
+	ac = "!f() { git add . && git commit -m \"$*\"; }; f"
