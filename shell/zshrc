@@ -284,8 +284,18 @@ agentpane() {
 
   [ -n "$HERDR_ENV" ] || { echo "agentpane: not inside herdr" >&2; return 1; }
 
-  local pane
-  pane=$(herdr pane split --current --direction right --ratio 0.4 --cwd "$cwd" \
+  # Always split the WIDEST pane in the tab, 50/50. Splitting "--current" with
+  # a fixed ratio compounds: three agents ended up 34/52/129 columns because
+  # each split carved a fraction off an already-narrow pane. Widest-pane +
+  # even halves keeps a row of agents readable no matter how many you add.
+  local pane target
+  target=$(herdr pane layout --current | python3 -c '
+import json, sys
+panes = json.load(sys.stdin)["result"]["layout"]["panes"]
+print(max(panes, key=lambda p: p["rect"]["width"])["pane_id"])') || {
+    echo "agentpane: could not read layout" >&2; return 1; }
+
+  pane=$(herdr pane split "$target" --direction right --ratio 0.5 --cwd "$cwd" \
          | python3 -c 'import json,sys; print(json.load(sys.stdin)["result"]["pane"]["pane_id"])') || {
     echo "agentpane: split failed" >&2; return 1; }
 
