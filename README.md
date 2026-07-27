@@ -79,9 +79,26 @@ has it without any per-machine setup:
 
 The env var enables spawning teammates (peer agents with their own context that keep
 running, as opposed to subagents that return a report and exit). `teammateMode: auto`
-opens each one in its own tmux split pane, which is why the `grid` layout and
-`tmux/tmux.conf` matter here: outside tmux there is no pane to open and teammate-spawning
-commands fall back to running inline.
+opens each one in its own split pane, which is why the `grid` layout and
+`tmux/tmux.conf` matter here: with no pane to open, teammate-spawning commands fall
+back to running inline.
+
+### Native iTerm2 split panes (instead of tmux)
+
+Teammates can open as **native iTerm2 splits** rather than a separate tmux session.
+Claude Code prompts to set this up the first time; bootstrap does it up front so the
+prompt never appears on a new machine. Two pieces, both tracked here:
+
+1. **`it2` CLI** — a uv tool, listed in `packages/install.sh`.
+2. **iTerm2's Python API** — `EnableAPIServer`, set by `bootstrap.sh` and committed in
+   `iterm/com.googlecode.iterm2.plist`. It's the GUI's
+   *Settings → General → Magic → Enable Python API*.
+
+**The API server only starts at launch, so iTerm2 must be restarted once after
+enabling it.** Until then `it2` fails with "There was a problem connecting to iTerm2"
+and teammates fall back to tmux. Verify with `it2 app theme` — it should print the
+theme rather than a connection error. The first connection also raises an iTerm2
+permission prompt to approve.
 
 ## How each piece syncs
 
@@ -93,6 +110,19 @@ commands fall back to running inline.
   folder"* to `iterm/`. iTerm reads it on launch and writes it back on quit, so
   changes you make in iTerm's UI land in the repo. After changing iTerm settings,
   **quit iTerm** (to flush), then commit `iterm/com.googlecode.iterm2.plist`.
+
+  If you ever need to edit that plist by hand, **don't use `PlistBuddy`** — it
+  silently rewrites the binary plist as XML (4× the size, and the keymap escape
+  sequences come out as raw control characters that break XML parsers). Use Python
+  and write it back as binary:
+
+  ```python
+  import plistlib
+  p = 'iterm/com.googlecode.iterm2.plist'
+  d = plistlib.load(open(p, 'rb'))
+  d['SomeKey'] = True
+  plistlib.dump(d, open(p, 'wb'), fmt=plistlib.FMT_BINARY)
+  ```
 
 ## NOT synced here (deliberately)
 

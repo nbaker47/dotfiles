@@ -1,8 +1,18 @@
 # dotfiles — todo
 
 ## Blocking (you must do)
+- **Restart iTerm2 to activate the Python API** (needed for native split-pane
+  teammates). `EnableAPIServer` is now set in both the live prefs domain and
+  `iterm/com.googlecode.iterm2.plist`, but iTerm2 only starts the API server at
+  launch — I couldn't restart it because this Claude session is running *inside*
+  iTerm2. After relaunching, check it with:
+  ```bash
+  it2 app theme     # should print the theme, not a connection error
+  ```
+  The first connection also pops an iTerm2 permission prompt — approve it. Until
+  this is done, teammates keep falling back to a separate tmux session.
 - **Quit and reopen iTerm2** so it loads prefs from `~/dotfiles/iterm` (yaquake
-  dropdown hotkey + keymaps won't apply until relaunch).
+  dropdown hotkey + keymaps won't apply until relaunch). Same restart covers both.
 - **(Optional) Make the repo public** if you still want that — Claude's safety
   classifier hard-blocks pushing personal config to a *public* repo, so it was
   created **private** at https://github.com/nbaker47/dotfiles. Flip in GitHub →
@@ -31,6 +41,10 @@
   want them on another machine, rsync/Syncthing the dir with the worker stopped — not git.
 
 ## Done
+- **iTerm2 native split panes for teammates (2026-07-27)** — `it2` CLI added to the uv
+  tools in `packages/install.sh`; iTerm2's Python API (`EnableAPIServer`) enabled by
+  `bootstrap.sh` and committed into the tracked plist. A new machine no longer sees the
+  "iTerm2 Split Pane Setup" prompt. Still needs a one-time iTerm2 restart (see Blocking).
 - **`packages/` layer added (2026-07-27)** — `Brewfile` (26 formulae + 11 casks incl.
   herdr), `install.sh` (brew bundle + oh-my-zsh, p10k, bun, Claude Code, npm globals,
   uv tools), `sync.sh` (drift report). `bootstrap.sh` runs packages before symlinks.

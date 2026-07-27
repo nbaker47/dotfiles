@@ -98,7 +98,15 @@ fi
 echo "==> Pointing iTerm2 at $REPO/iterm"
 defaults write com.googlecode.iterm2 PrefsCustomFolder -string "$REPO/iterm"
 defaults write com.googlecode.iterm2 LoadPrefsFromCustomFolder -bool true
-echo "  iTerm2: QUIT AND REOPEN iTerm for prefs (yaquake hotkey, keymaps) to load."
+
+# Python API (Settings > General > Magic > Enable Python API). Required by the
+# `it2` CLI, which is what lets Claude Code open teammates as native iTerm2 split
+# panes instead of falling back to a separate tmux session. Setting it here means
+# a new machine never has to click through the "iTerm2 Split Pane Setup" prompt.
+# Also committed in iterm/com.googlecode.iterm2.plist, so it survives either path.
+defaults write com.googlecode.iterm2 EnableAPIServer -bool true
+echo "  iTerm2: Python API enabled (for it2 / teammate split panes)."
+echo "  iTerm2: QUIT AND REOPEN iTerm for prefs (yaquake hotkey, keymaps, Python API) to load."
 
 # Reload what we can without a restart
 command -v tmux >/dev/null && tmux source-file "$HOME/.tmux.conf" 2>/dev/null && echo "==> tmux reloaded" || true

@@ -117,7 +117,12 @@ else
 fi
 
 say "uv tools"
-UV_TOOLS=( nano-pdf )
+UV_TOOLS=(
+  nano-pdf
+  it2        # iTerm2 CLI — lets Claude Code open teammates as native iTerm2 split
+             # panes instead of a separate tmux session. Needs iTerm2's Python API
+             # enabled, which bootstrap.sh turns on.
+)
 if have uv; then
   for tool in "${UV_TOOLS[@]}"; do
     if uv tool list 2>/dev/null | grep -q "^${tool} "; then
