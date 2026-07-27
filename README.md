@@ -18,7 +18,7 @@ shell, and run `grid` for the 2×2 Claude tmux layout.
 | Path | Symlinks to | What |
 |------|-------------|------|
 | `claude/CLAUDE.md` | `~/.claude/CLAUDE.md` | Global Claude Code instructions (resume cmd, parallel-session comm, commits, todo.md) |
-| `claude/settings.json` | `~/.claude/settings.json` | Claude Code settings — enabled plugins (incl. **claude-mem**) + marketplaces. Plugins auto-install from these on first run. |
+| `claude/settings.json` | `~/.claude/settings.json` | Claude Code settings - enabled plugins (incl. **claude-mem**) + marketplaces, plus **Agent Teams** always on (see below). Plugins auto-install from these on first run. |
 | `claude/comm/README.md` | `~/.claude/comm/README.md` | Protocol/template for the global parallel-agent coordination dir |
 | `shell/zshrc` | `~/.zshrc` | zsh + oh-my-zsh + p10k; aliases; the **`grid`** 2×2 Claude tmux launcher |
 | `shell/zprofile` | `~/.zprofile` | Homebrew shellenv |
@@ -29,6 +29,22 @@ shell, and run `grid` for the 2×2 Claude tmux layout.
 | `agents/skills/` | `~/.agents/skills` | Agent skills (vendored). `~/.claude/skills/<name>` symlinks are rebuilt by bootstrap. New `npx skills add ...` installs land here and auto-track. |
 | `agents/skill-lock.json` | `~/.agents/.skill-lock.json` | Skill install manifest |
 | `iterm/com.googlecode.iterm2.plist` | *iTerm custom prefs folder* | iTerm2 — **yaquake** dropdown profile (hotkey), keymaps, profiles |
+
+## Agent Teams (on by default)
+
+`claude/settings.json` carries the two keys that turn it on, so a bootstrapped machine
+has it without any per-machine setup:
+
+```json
+"env": { "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1" },
+"teammateMode": "auto"
+```
+
+The env var enables spawning teammates (peer agents with their own context that keep
+running, as opposed to subagents that return a report and exit). `teammateMode: auto`
+opens each one in its own tmux split pane, which is why the `grid` layout and
+`tmux/tmux.conf` matter here: outside tmux there is no pane to open and teammate-spawning
+commands fall back to running inline.
 
 ## How each piece syncs
 

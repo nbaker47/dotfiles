@@ -1,5 +1,9 @@
 {
   "includeCoAuthoredBy": false,
+  "env": {
+    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"
+  },
+  "teammateMode": "auto",
   "enabledPlugins": {
     "gopls-lsp@claude-plugins-official": true,
     "claude-mem@thedotmack": true,
