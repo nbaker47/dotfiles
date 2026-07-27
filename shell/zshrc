@@ -251,11 +251,18 @@ therdr() {
     # Create detached so the layout can be configured BEFORE attaching, then
     # attach. (-A on new-session would block here with claude in the foreground.)
     tmux new-session -d -s "$s" -n claude claude --teammate-mode tmux $perm "$@"
+    # main-pane-width alone is NOT enough: tmux 3.6 accepts "60%" but
+    # select-layout still handed the lead ~30% of the window. An explicit
+    # `resize-pane -x 60%` after the layout is what actually sticks, so each
+    # hook runs both (indexed hooks = two commands per event).
     tmux set-option -t "$s" main-pane-width 60%
-    tmux set-hook   -t "$s" after-split-window 'select-layout main-vertical'
-    tmux set-hook   -t "$s" client-resized     'select-layout main-vertical'
-    tmux set-hook   -t "$s" pane-exited        'select-layout main-vertical'
+    local h
+    for h in after-split-window client-resized pane-exited; do
+      tmux set-hook -t "$s" "${h}[0]" 'select-layout main-vertical'
+      tmux set-hook -t "$s" "${h}[1]" 'resize-pane -t 0 -x 60%'
+    done
     tmux select-layout -t "$s" main-vertical
+    tmux resize-pane -t "$s":0.0 -x 60%
     tmux attach -t "$s"
   fi
 }

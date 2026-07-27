@@ -92,7 +92,10 @@ LEAD — with three teammates the orchestrator collapses to a ~46-column sliver
 while the teammates take the rest. `therdr` fixes this at session creation:
 
 - `main-pane-width 60%` + `select-layout main-vertical` — the lead gets one
-  tall pane, teammates stack in a column beside it.
+  tall pane, teammates stack in a column beside it. **`main-pane-width` alone is
+  not enough**: tmux 3.6 accepts `"60%"` but `select-layout` still handed the
+  lead ~30% of the window. An explicit `resize-pane -t 0 -x 60%` after the
+  layout is what actually sticks, so every hook runs both (indexed hooks).
 - session-scoped hooks on `after-split-window`, `client-resized` and
   `pane-exited` re-apply it, so spawning or losing a teammate never drifts.
 
