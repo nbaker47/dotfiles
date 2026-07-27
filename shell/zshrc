@@ -219,9 +219,16 @@ therdr() {
     return
   fi
 
+  # Bypass permissions: teammates inherit the lead's mode, and shift+tab can
+  # only cycle manual/accept-edits/plan -- "bypass permissions on" is
+  # unreachable unless the process was LAUNCHED with the flag. Set
+  # THERDR_NO_BYPASS=1 to opt out for a run.
+  local -a perm
+  [ -z "$THERDR_NO_BYPASS" ] && perm=(--dangerously-skip-permissions)
+
   # Layer 2: tmux, so Claude Code has panes to split for teammates.
   if [ -n "$TMUX" ]; then          # already inside tmux: nothing to set up
-    command claude --teammate-mode tmux "$@"
+    command claude --teammate-mode tmux $perm "$@"
     return
   fi
 
@@ -230,7 +237,7 @@ therdr() {
     tmux attach -t "$s"
   else
     # -A: attach if it raced into existence; keep the server alive per-session
-    tmux new-session -A -s "$s" -n claude claude --teammate-mode tmux "$@"
+    tmux new-session -A -s "$s" -n claude claude --teammate-mode tmux $perm "$@"
   fi
 }
 

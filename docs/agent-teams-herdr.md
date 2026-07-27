@@ -75,6 +75,14 @@ ps aux | grep '[t]eammate-mode'   # expect: claude --teammate-mode tmux
 No status bar means no tmux, which means teammates silently degrade to
 in-process.
 
+## Permissions
+
+Teammates inherit the lead's permission mode, and shift+tab only cycles
+manual / accept-edits / plan — **"bypass permissions on" is unreachable unless
+the process was launched with `--dangerously-skip-permissions`**. So `therdr`
+passes it by default; every teammate it spawns comes up in bypass too. Opt out
+for a single run with `THERDR_NO_BYPASS=1 therdr`.
+
 ## Verified behaviour
 
 Spawning a subagent from a `therdr` session takes the tmux pane count 1 → 2,
