@@ -59,6 +59,7 @@ echo "==> Linking dotfiles from $REPO"
 link claude/CLAUDE.md        "$HOME/.claude/CLAUDE.md"
 link claude/settings.json    "$HOME/.claude/settings.json"
 link claude/comm/README.md   "$HOME/.claude/comm/README.md"
+link claude/statusline-command.sh "$HOME/.claude/statusline-command.sh"
 # (settings.local.json is intentionally machine-local and NOT linked)
 
 # Shell (zsh + powerlevel10k + the `grid` tmux Claude launcher live in zshrc)
