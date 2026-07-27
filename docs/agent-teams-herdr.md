@@ -109,15 +109,29 @@ Symptom: the space shows no agent, `herdr agent list` omits the pane, and
 `agent_session` IS populated (herdr's bundled SessionStart hook reports session
 identity, but identity alone doesn't bind an agent).
 
-Investigated and ruled out (2026-07-27):
+Investigated and ruled out (2026-07-27) — all tested, not assumed:
 - `pane.report_agent` over herdr's socket API — returns `{"type":"ok"}` but
   never takes effect, with or without `pane.clear_agent_authority` first.
   Reporting appears to require process lineage herdr can verify.
 - A custom Claude hook calling that method on lifecycle events — same result,
   so it was deleted rather than shipped as dead code.
+- `pane.report_agent` called from a process with correct lineage (a shell
+  inside the target pane, not the tmux server) — still `ok`, still no binding.
+  So it is not a lineage/authority check; the method simply cannot bind.
 - Detection manifests (`~/.local/state/herdr/agent-detection/*.toml`) contain
   only screen-content rules; they set *state* for an already-bound agent, they
   don't bind one.
+- `--teammate-mode tmux` while NOT inside tmux (claude started directly in a
+  herdr pane via `herdr agent start`): herdr tracks the lead correctly, but the
+  Agent tool silently falls back to in-process — no tmux session is created, so
+  teammates stay invisible. Explicit `tmux` mode does not bootstrap its own
+  session.
+- A shim putting `tmux` on PATH to translate splits into `herdr pane split`:
+  Claude Code invokes 13+ tmux subcommands (`capture-pane`, `display-message`
+  with format strings, `list-panes`, `respawn-pane`, …). Reimplementing that
+  surface would be brittle against any Claude Code update. Not attempted.
+- herdr itself has no tmux awareness — its binary contains no tmux integration,
+  so there is nothing to configure.
 
 What DID help: `set-titles` passthrough in `tmux.conf`, so herdr shows the real
 task title instead of the literal string "therdr".
