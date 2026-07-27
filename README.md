@@ -111,18 +111,25 @@ permission prompt to approve.
   changes you make in iTerm's UI land in the repo. After changing iTerm settings,
   **quit iTerm** (to flush), then commit `iterm/com.googlecode.iterm2.plist`.
 
-  If you ever need to edit that plist by hand, **don't use `PlistBuddy`** — it
-  silently rewrites the binary plist as XML (4× the size, and the keymap escape
-  sequences come out as raw control characters that break XML parsers). Use Python
-  and write it back as binary:
+  Two things to know about that plist:
 
-  ```python
-  import plistlib
-  p = 'iterm/com.googlecode.iterm2.plist'
-  d = plistlib.load(open(p, 'rb'))
-  d['SomeKey'] = True
-  plistlib.dump(d, open(p, 'wb'), fmt=plistlib.FMT_BINARY)
-  ```
+  - **iTerm2 writes it as XML**, and only exports the *syncable* settings — it drops
+    `NoSync*` keys, window frames, Sparkle updater state and Apple system keys. So it
+    is much smaller than a raw copy of `~/Library/Preferences/com.googlecode.iterm2.plist`
+    (29 keys vs 76). That's correct: profiles, keymaps and the yaquake hotkey are all
+    in the exported set; the dropped keys are machine-local by design.
+  - **Use `plutil`, not Python, to read or edit it.** The XML embeds raw control
+    characters from the keymap escape sequences, so `plistlib`/expat fails with
+    "not well-formed"; `file` even reports it as `data`. `plutil` handles it:
+
+    ```bash
+    plutil -extract EnableAPIServer raw -o - iterm/com.googlecode.iterm2.plist
+    plutil -replace EnableAPIServer -bool true iterm/com.googlecode.iterm2.plist
+    plutil -remove  SomeKey                    iterm/com.googlecode.iterm2.plist
+    ```
+
+    If you do need Python, convert a *copy* to binary first
+    (`plutil -convert binary1 -o /tmp/x.plist …`) and parse that.
 
 ## NOT synced here (deliberately)
 
