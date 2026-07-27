@@ -208,11 +208,22 @@ grid() {
 # tmux it silently falls back to in-process -- teammates still work, but you
 # never see them. Pinning "tmux" gets real teammates in panes you can watch.
 therdr() {
+  command -v tmux >/dev/null || { echo "therdr: tmux not installed" >&2; return 1; }
+
+  # Layer 1: herdr. If we're not inside it there are no herdr panes to live in,
+  # so hand off to herdr and let the user re-run therdr in a pane. (We can't
+  # just wrap it: herdr takes over the terminal as a full-screen TUI.)
+  if [ -z "$HERDR_ENV" ]; then
+    echo "therdr: not inside herdr — starting it. Re-run 'therdr' in a herdr pane."
+    command herdr
+    return
+  fi
+
+  # Layer 2: tmux, so Claude Code has panes to split for teammates.
   if [ -n "$TMUX" ]; then          # already inside tmux: nothing to set up
     command claude --teammate-mode tmux "$@"
     return
   fi
-  command -v tmux >/dev/null || { echo "therdr: tmux not installed" >&2; return 1; }
 
   local s="therdr-${PWD:t}"
   if tmux has-session -t "$s" 2>/dev/null; then
