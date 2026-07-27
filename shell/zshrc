@@ -263,6 +263,21 @@ therdr() {
     done
     tmux select-layout -t "$s" main-vertical
     tmux resize-pane -t "$s":0.0 -x 60%
+
+    # Watchdog. The hooks above are necessary but NOT sufficient: Claude's tmux
+    # backend re-lays-out the window AFTER after-split-window fires, so a
+    # one-shot hook loses the race and the lead collapses to ~30% every time a
+    # teammate spawns. This re-asserts the width for the life of the session and
+    # exits with it. Cheap: one `tmux display-message` every 3s.
+    ( while tmux has-session -t "$s" 2>/dev/null; do
+        ww=$(tmux display-message -p -t "$s" '#{window_width}' 2>/dev/null) || break
+        pw=$(tmux display-message -p -t "$s":0.0 '#{pane_width}' 2>/dev/null) || break
+        if [ "$pw" -lt $(( ww * 60 / 100 - 3 )) ]; then
+          tmux select-layout -t "$s" main-vertical 2>/dev/null
+          tmux resize-pane -t "$s":0.0 -x 60% 2>/dev/null
+        fi
+        sleep 3
+      done ) >/dev/null 2>&1 &!
     tmux attach -t "$s"
   fi
 }

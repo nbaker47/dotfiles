@@ -97,7 +97,14 @@ while the teammates take the rest. `therdr` fixes this at session creation:
   lead ~30% of the window. An explicit `resize-pane -t 0 -x 60%` after the
   layout is what actually sticks, so every hook runs both (indexed hooks).
 - session-scoped hooks on `after-split-window`, `client-resized` and
-  `pane-exited` re-apply it, so spawning or losing a teammate never drifts.
+  `pane-exited` re-apply it.
+- **plus a watchdog**, because the hooks are necessary but NOT sufficient:
+  Claude's tmux backend re-lays-out the window *after* `after-split-window`
+  fires, so the one-shot hook loses the race and the lead collapses to ~30%
+  every time a teammate spawns. `therdr` backgrounds a loop that re-asserts the
+  width every 3s and exits when the session does. Verified: squeezing the lead
+  to 20 columns self-corrected to 63 within 8s, and the loop exits with the
+  session.
 
 Session-scoped matters: `tmux.conf` sets a GLOBAL `client-resized -> tiled`
 hook for the `grid` function. Session hooks override it for therdr only, so
