@@ -1,0 +1,66 @@
+# Brewfile — every tool that Homebrew can install.
+#
+#   brew bundle --file ~/dotfiles/packages/Brewfile
+#
+# Run by bootstrap.sh automatically. Idempotent: already-installed packages are
+# skipped. Only top-level packages are listed — Homebrew resolves dependencies
+# (ffmpeg, python, openssl, …) on its own, so this file stays readable.
+#
+# To add a tool: `brew install foo`, then add a line here (or run packages/sync.sh
+# to see what's installed but untracked).
+
+tap "steipete/tap"   # steipete's agent/mac utilities — tapped, nothing installed from it yet
+
+# ── Terminal & shell ──────────────────────────────────────────────────────────
+brew "herdr"         # agent multiplexer / terminal workspace manager — herdr.dev
+brew "tmux"          # the `grid` 2x2 Claude launcher in shell/zshrc needs this
+brew "ripgrep"       # rg — also what Claude Code shells out to for search
+brew "watch"
+brew "cliclick"      # scriptable macOS mouse/keyboard clicks
+
+# ── Dev core ──────────────────────────────────────────────────────────────────
+brew "gh"
+brew "go"
+brew "node"
+brew "corepack"      # provides the active `yarn` (4.x) + pnpm shims.
+                     # Deliberately NO `brew "yarn"`: that formula is yarn 1.22 and
+                     # collides with corepack over /opt/homebrew/bin/yarn, which
+                     # makes `brew bundle` fail. corepack's yarn is what actually runs.
+brew "uv"            # Python package/tool manager — installs the uv tools below
+
+# ── AI CLIs ───────────────────────────────────────────────────────────────────
+brew "gemini-cli"
+brew "openai-whisper"
+
+# ── Cloud & infra ─────────────────────────────────────────────────────────────
+brew "terraform"
+brew "terragrunt"
+brew "helm"
+brew "kind"
+brew "colima"        # container runtime (Docker Desktop alternative)
+brew "cloud-sql-proxy"
+brew "libpq"         # psql client
+
+# ── Mobile / iOS / Android ────────────────────────────────────────────────────
+brew "cocoapods"
+brew "fastlane"
+brew "libimobiledevice"
+brew "openjdk"
+brew "openjdk@17"    # Android/Gradle pins to 17 — JAVA_HOME in zshrc points here
+
+# ── Docs & media ──────────────────────────────────────────────────────────────
+brew "pandoc"
+brew "poppler"       # pdftotext, pdfimages
+
+# ── Casks ─────────────────────────────────────────────────────────────────────
+cask "codex"             # OpenAI coding agent
+cask "docker-desktop"    # also supplies /usr/local/bin/kubectl for the `k` alias
+cask "gcloud-cli"
+cask "rectangle"         # window snapping
+cask "swift-quit"
+cask "flameshot"         # screenshots
+cask "pika"              # colour picker
+cask "telegram"
+cask "godot"
+cask "kdenlive"
+cask "epic-games"

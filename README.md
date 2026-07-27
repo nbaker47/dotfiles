@@ -1,7 +1,7 @@
 # dotfiles
 
 Personal machine config, version-controlled and synced across computers. One
-`bootstrap.sh` symlinks everything into place.
+`bootstrap.sh` **installs every tool** and symlinks every config into place.
 
 ## New machine
 
@@ -10,8 +10,43 @@ git clone <this-repo-url> ~/dotfiles
 ~/dotfiles/bootstrap.sh
 ```
 
+That installs Homebrew if missing, everything in `packages/Brewfile` (herdr, tmux,
+gh, terraform, the casks…), then the non-brew tools (oh-my-zsh, powerlevel10k, bun,
+Claude Code, npm globals, uv tools) — and only then symlinks the configs, since
+`shell/zshrc` sources oh-my-zsh and needs it to exist.
+
 Then **quit and reopen iTerm2** (so it loads prefs from this repo), open a new
 shell, and run `grid` for the 2×2 Claude tmux layout.
+
+```bash
+~/dotfiles/bootstrap.sh --links-only     # skip installs, just re-link configs (fast)
+~/dotfiles/bootstrap.sh --packages-only  # install/update tools, leave symlinks alone
+```
+
+## Packages
+
+| Path | What |
+|------|------|
+| `packages/Brewfile` | Every Homebrew formula + cask. Edit this to add a tool. |
+| `packages/install.sh` | Brew bundle, then the tools Homebrew doesn't carry. Idempotent. |
+| `packages/sync.sh` | Read-only drift report: installed-but-untracked vs tracked-but-missing. |
+
+Adding a tool: `brew install foo`, then add `brew "foo"` to the Brewfile. Run
+`packages/sync.sh` any time to catch things you installed and forgot to track.
+
+The Brewfile deliberately lists only **top-level** packages (`brew leaves`-style),
+not the ~100 transitive dependencies — Homebrew resolves those itself, and listing
+them would make the file unreadable and churn on every upgrade.
+
+### Why Homebrew and not Nix
+
+Considered and rejected for this setup: a third of the list is macOS GUI casks
+(Docker Desktop, Godot, Rectangle) that nix-darwin ends up delegating to Homebrew
+anyway; `herdr` and `claude` ship their own self-updaters that fight Nix's
+immutable store; and the macOS-specific bits here (the iTerm2 `defaults write`,
+Karabiner) already work fine in plain bash. Nix pays off across many machines and
+per-project dev shells — this is one Mac, so it'd be a rewrite plus a new language
+for no reproducibility win. `brew bundle` covers it in one declarative file.
 
 ## What's in here
 
@@ -29,6 +64,7 @@ shell, and run `grid` for the 2×2 Claude tmux layout.
 | `agents/skills/` | `~/.agents/skills` | Agent skills (vendored). `~/.claude/skills/<name>` symlinks are rebuilt by bootstrap. New `npx skills add ...` installs land here and auto-track. |
 | `agents/skill-lock.json` | `~/.agents/.skill-lock.json` | Skill install manifest |
 | `iterm/com.googlecode.iterm2.plist` | *iTerm custom prefs folder* | iTerm2 — **yaquake** dropdown profile (hotkey), keymaps, profiles |
+| `packages/Brewfile` | *(not a symlink)* | Homebrew formulae + casks, installed by `bootstrap.sh` |
 
 ## Agent Teams (on by default)
 

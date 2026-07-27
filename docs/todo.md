@@ -10,6 +10,20 @@
 - On each *other* machine: `git clone https://github.com/nbaker47/dotfiles ~/dotfiles && ~/dotfiles/bootstrap.sh`.
 
 ## Follow-ups
+- **Remove the old curl-installed herdr**: `rm ~/.local/bin/herdr`. `herdr` is now a
+  Homebrew formula (`brew install herdr`, tracked in `packages/Brewfile`), but
+  `~/.local/bin` comes earlier in PATH so the old binary shadows it — Homebrew warns
+  about this on install. Both are 0.7.5 today, so nothing is broken; they'll diverge
+  the first time you `brew upgrade`. Left in place because I didn't install it.
+  After removing it, upgrade with `brew upgrade herdr`, not `herdr update`.
+- `packages/Brewfile` tracks the tools installed as of 2026-07-27. Run
+  `packages/sync.sh` occasionally — it reports anything installed but untracked.
+- Tools deliberately *not* in the Brewfile because they self-update or aren't in
+  brew: oh-my-zsh, powerlevel10k, bun, Claude Code, the npm globals (clawhub,
+  eas-cli, firebase-tools, mobai-mcp) and uv tools (nano-pdf). These live in
+  `packages/install.sh` — add new ones to the arrays near the bottom of that file.
+- `steipete/tap` is tapped but nothing is installed from it; the tap line is kept in
+  the Brewfile so a new machine matches. Drop it if you don't want it.
 - Stale `~/Code/misc/karibiner.json` (3.4 KB, Nov 2025) is an old partial copy of
   the Karabiner config — superseded by `~/dotfiles/karabiner/karabiner.json`. Delete
   it to avoid confusion (left in place for now; not my call to remove).
@@ -17,6 +31,14 @@
   want them on another machine, rsync/Syncthing the dir with the worker stopped — not git.
 
 ## Done
+- **`packages/` layer added (2026-07-27)** — `Brewfile` (26 formulae + 11 casks incl.
+  herdr), `install.sh` (brew bundle + oh-my-zsh, p10k, bun, Claude Code, npm globals,
+  uv tools), `sync.sh` (drift report). `bootstrap.sh` runs packages before symlinks.
+  Evaluated Nix/nix-darwin and stayed on Homebrew — rationale in README.
+- **Fixed `shell/zshrc` bug**: it unconditionally sourced
+  `~/.openclaw/completions/openclaw.zsh`, which doesn't exist — every new interactive
+  shell printed `no such file or directory`. Now guarded with `[ -s ... ] &&`, like
+  the bun line. Also made the hardcoded `/Users/user` paths use `$HOME`.
 - Unified dotfiles repo at `~/dotfiles` (claude, shell, tmux, karabiner, iterm, git).
 - `bootstrap.sh` symlinks all configs into place (idempotent, backs up originals).
 - Live files converted to symlinks; iTerm pointed at repo's `iterm/` folder.

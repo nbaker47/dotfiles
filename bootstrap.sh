@@ -1,14 +1,38 @@
 #!/usr/bin/env bash
-# Dotfiles bootstrap — symlinks every managed config into place.
+# Dotfiles bootstrap — installs every tool, then symlinks every managed config.
 # Idempotent: safe to re-run. Existing real files are backed up first.
 #
 #   git clone <repo> ~/dotfiles && ~/dotfiles/bootstrap.sh
+#
+# Flags:
+#   --links-only      skip package installation, just symlink configs (fast)
+#   --packages-only   only install packages, don't touch symlinks
 #
 set -euo pipefail
 
 REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 BACKUP="$HOME/.dotfiles-backup/$(date +%Y%m%d-%H%M%S)"
 linked=0; backed_up=0
+
+do_packages=1; do_links=1
+for arg in "$@"; do
+  case "$arg" in
+    --links-only)    do_packages=0 ;;
+    --packages-only) do_links=0 ;;
+    -h|--help)       sed -n '2,10p' "${BASH_SOURCE[0]}"; exit 0 ;;
+    *) echo "unknown flag: $arg (try --help)" >&2; exit 2 ;;
+  esac
+done
+
+# Packages first: the configs we link below assume these exist — zshrc sources
+# oh-my-zsh, and the `grid` function needs tmux.
+if [ "$do_packages" -eq 1 ]; then
+  "$REPO/packages/install.sh"
+fi
+
+if [ "$do_links" -eq 0 ]; then
+  echo; echo "Packages done (--packages-only; symlinks untouched)."; exit 0
+fi
 
 # link <repo-relative-source> <absolute-target>
 link() {

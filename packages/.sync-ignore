@@ -1,0 +1,8 @@
+# Packages installed on this machine that sync.sh should NOT nag about being
+# absent from the Brewfile. One name per line; # starts a comment.
+
+# yarn 1.22 (brew formula) is superseded by corepack's yarn 4.x, which owns
+# /opt/homebrew/bin/yarn. Keeping both in the Brewfile makes `brew bundle` fail on
+# the symlink conflict, so corepack is tracked and this is deliberately not.
+# Safe to `brew uninstall yarn` — corepack keeps providing the `yarn` command.
+yarn
