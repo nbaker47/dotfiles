@@ -116,6 +116,31 @@ else
   echo "  ! npm not found — skipped (expected from the 'node' brew formula)"
 fi
 
+say "bakr (herdr fork with native Claude Agent Teams)"
+# Built from source: bakr has no hosted releases (fork of herdr, Apache-2.0).
+# Needs rustup (1.96.1 via rust-toolchain.toml) + zig@0.15 from the Brewfile.
+if [ -x "$HOME/.local/bin/bakr" ] || have bakr; then
+  skip "bakr"
+else
+  if [ ! -d "$HOME/Code/bakr" ]; then
+    did "cloning nbaker47/bakr"
+    git clone https://github.com/nbaker47/bakr "$HOME/Code/bakr" || echo "  ! clone failed — skipping bakr"
+  fi
+  if [ -d "$HOME/Code/bakr" ]; then
+    if ! have cargo && [ ! -x "$HOME/.cargo/bin/cargo" ]; then
+      did "installing rustup"
+      curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --default-toolchain 1.96.1
+    fi
+    did "building bakr (takes a few minutes)"
+    ( cd "$HOME/Code/bakr" && \
+      PATH="$HOME/.cargo/bin:$PATH" ZIG=/opt/homebrew/opt/zig@0.15/bin/zig \
+      cargo build --release && \
+      mkdir -p "$HOME/.local/bin" && \
+      ln -sf "$HOME/Code/bakr/target/release/bakr" "$HOME/.local/bin/bakr" ) \
+      || echo "  ! bakr build failed — see ~/Code/bakr (README has the build notes)"
+  fi
+fi
+
 say "uv tools"
 UV_TOOLS=(
   nano-pdf

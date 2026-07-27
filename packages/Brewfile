@@ -18,6 +18,9 @@ brew "ripgrep"       # rg — also what Claude Code shells out to for search
 brew "watch"
 brew "cliclick"      # scriptable macOS mouse/keyboard clicks
 
+brew "zig@0.15"      # bakr build dep (vendored libghostty-vt needs zig 0.15.x;
+                     # plain `zig` is 0.16+ and incompatible — keep the keg)
+
 # ── Dev core ──────────────────────────────────────────────────────────────────
 brew "gh"
 brew "go"

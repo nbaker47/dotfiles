@@ -184,7 +184,20 @@ grid() {
   tmux attach -t "$s"
 }
 
+# --- bakr: native Agent Teams panes (supersedes therdr inside bakr) ---------
+# Inside a bakr pane (the herdr fork at ~/Code/bakr), bakr exports a tmux-
+# compatible identity (TMUX/TMUX_PANE + a tmux shim), so Claude Code's teammate
+# backend drives REAL bakr panes natively -- sidebar tracking, titles, colors,
+# team comms, no nested tmux. The only catch: ~/.claude/settings.json pins
+# teammateMode to "in-process" (right for herdr panes, wrong for bakr), so
+# override it to auto where bakr is detected and plain `claude` just works.
+if [[ -n "$BAKR_ENV" ]]; then
+  alias claude='claude --teammate-mode auto'
+fi
+
 # --- therdr: tmux+herdr combo so Claude Code AGENT TEAMS actually work -------
+# NOTE: superseded by bakr (above) inside bakr panes. Still the right tool in
+# plain herdr panes.
 # The problem it solves: Claude Code's native teammate panes split *iTerm2's*
 # session. Under herdr that's wrong twice over -- the split lands beside herdr
 # instead of inside its pane system, and it usually fails outright with

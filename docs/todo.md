@@ -1,5 +1,20 @@
 # dotfiles — todo
 
+## Try bakr (2026-07-28)
+- **bakr is live**: the herdr fork at `~/Code/bakr` (repo nbaker47/bakr) with NATIVE
+  Claude Agent Teams — teammates spawn as real bakr panes (verified e2e: lead +
+  teammate `@probe`, SendMessage round-trip, sidebar labels). Installed at
+  `~/.local/bin/bakr`; run `bakr` in a fresh terminal (it refuses to nest inside
+  herdr). Inside bakr panes plain `claude` gets `--teammate-mode auto` via a zshrc
+  alias, so teams just work. `bakr harness install` pulls the claude-harness kit
+  into any repo; the claude integration hook installs itself on first server start.
+- **Migration when ready**: bakr and herdr coexist (separate sockets/config/state).
+  When you switch daily driver to bakr, retire `therdr` and consider flipping
+  `teammateMode` in settings.json back to `auto`.
+- **Known cosmetic gap**: teammate panes show `agent: None` in `bakr pane list`
+  (screen-content detection doesn't bind the teammate claude UI yet) — label,
+  title, and agent_session all work; tracked in ~/Code/bakr/docs/todo.md.
+
 ## Blocking (you must do)
 - ~~**Fully QUIT iTerm2 (⌘Q) to activate the Python API**~~ — **done, and it turned
   out to be the wrong fix anyway.** iTerm2 restarted 2026-07-27 15:07 and the API
