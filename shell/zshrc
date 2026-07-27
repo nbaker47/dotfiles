@@ -155,7 +155,7 @@ export PATH=$ANDROID_HOME/emulator:$ANDROID_HOME/tools:$ANDROID_HOME/tools/bin:$
 export PATH="$HOME/.local/bin:$PATH"
 
 # OpenClaw Completion
-source "/Users/user/.openclaw/completions/openclaw.zsh"
+[ -s "$HOME/.openclaw/completions/openclaw.zsh" ] && source "$HOME/.openclaw/completions/openclaw.zsh"
 
 # bun completions
 [ -s "/Users/user/.bun/_bun" ] && source "/Users/user/.bun/_bun"
@@ -164,7 +164,7 @@ source "/Users/user/.openclaw/completions/openclaw.zsh"
 export BUN_INSTALL="$HOME/.bun"
 export PATH="$BUN_INSTALL/bin:$PATH"
 
-alias claude-mem='/Users/user/.bun/bin/bun "/Users/user/.claude/plugins/cache/thedotmack/claude-mem/12.3.2/scripts/worker-service.cjs"'
+alias claude-mem="$HOME/.bun/bin/bun \"$HOME/.claude/plugins/cache/thedotmack/claude-mem/12.3.2/scripts/worker-service.cjs\""
 
 # 2x2 tmux grid: top-left / top-right / bottom-left run `claude --chrome`,
 # bottom-right is a plain zsh. Run `grid` to open or re-attach. Detach with
