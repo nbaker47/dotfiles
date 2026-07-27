@@ -130,6 +130,18 @@ Investigated and ruled out (2026-07-27) — all tested, not assumed:
   Claude Code invokes 13+ tmux subcommands (`capture-pane`, `display-message`
   with format strings, `list-panes`, `respawn-pane`, …). Reimplementing that
   surface would be brittle against any Claude Code update. Not attempted.
+- **Launching a teammate directly into a herdr pane.** The most promising
+  idea, and it *almost* works. Teammate launch is pure flags — captured from a
+  live team via `ps`:
+  `claude --agent-id <name>@<team> --agent-name <name> --team-name <team>
+   --agent-color <c> --parent-session-id <lead-session> --agent-type <type>`
+  Starting exactly that via `herdr agent start` into a herdr pane succeeds:
+  herdr tracks it (`agent: claude`) AND the pane renders the teammate label
+  (`@manual-probe`), so teammate *identity* is genuinely flag-driven. But the
+  lead cannot reach it — `SendMessage` returns "No agent named 'manual-probe'
+  is reachable". The roster/mailbox is established by the lead at spawn time;
+  an externally-launched process cannot join an existing team. Closed unless
+  Claude Code exposes an "adopt existing teammate" path.
 - herdr itself has no tmux awareness — its binary contains no tmux integration,
   so there is nothing to configure.
 
