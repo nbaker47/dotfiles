@@ -236,6 +236,11 @@ therdr() {
   if tmux has-session -t "$s" 2>/dev/null; then
     tmux attach -t "$s"
   else
+    # Known tradeoff -- say it out loud so it isn't a surprise later.
+    echo "therdr: teammates get visible panes, but herdr's sidebar will NOT"
+    echo "        track this session (it binds agents by scanning the pane's"
+    echo "        foreground process, and that process is now tmux). Run plain"
+    echo "        'claude' instead if you want herdr agent tracking."
     # -A: attach if it raced into existence; keep the server alive per-session
     tmux new-session -A -s "$s" -n claude claude --teammate-mode tmux $perm "$@"
   fi

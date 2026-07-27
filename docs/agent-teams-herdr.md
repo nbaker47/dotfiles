@@ -91,6 +91,47 @@ roster (`⏺ main`, `◯ <teammate>`). That is a real Agent-tool teammate — sh
 context, structured results, addressable via `SendMessage` — not a separate CLI
 being puppeteered.
 
+## Known limitation: herdr's sidebar loses the session
+
+**This is a real tradeoff, not a bug we can fix.** herdr binds an agent to a
+pane by scanning that pane's **foreground process group**. tmux is
+client/server, so under `therdr` the pane's foreground process is the tmux
+*client* while claude is a child of the tmux *server* — a different process
+tree herdr cannot see:
+
+```
+pane -> claude                              <- herdr sees it, sidebar tracks it
+pane -> tmux(client) .. tmux server -> claude   <- invisible to herdr
+```
+
+Symptom: the space shows no agent, `herdr agent list` omits the pane, and
+`herdr pane get` reports `agent: null`, `agent_status: unknown` — even though
+`agent_session` IS populated (herdr's bundled SessionStart hook reports session
+identity, but identity alone doesn't bind an agent).
+
+Investigated and ruled out (2026-07-27):
+- `pane.report_agent` over herdr's socket API — returns `{"type":"ok"}` but
+  never takes effect, with or without `pane.clear_agent_authority` first.
+  Reporting appears to require process lineage herdr can verify.
+- A custom Claude hook calling that method on lifecycle events — same result,
+  so it was deleted rather than shipped as dead code.
+- Detection manifests (`~/.local/state/herdr/agent-detection/*.toml`) contain
+  only screen-content rules; they set *state* for an already-bound agent, they
+  don't bind one.
+
+What DID help: `set-titles` passthrough in `tmux.conf`, so herdr shows the real
+task title instead of the literal string "therdr".
+
+**So choose per session:**
+
+| You want | Run | Cost |
+|---|---|---|
+| Visible teammate panes | `therdr` | herdr sidebar won't track the session |
+| herdr agent tracking | `claude` | teammates fall back to invisible in-process |
+
+Fixing this properly needs herdr to support a trusted report path (or tmux-aware
+detection) — worth raising upstream.
+
 ## The other helper: `agentpane`
 
 Different job. `agentpane <name> [cwd] [prompt]` spawns a **separate** Claude
