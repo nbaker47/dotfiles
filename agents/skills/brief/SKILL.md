@@ -75,6 +75,35 @@ other format.
 If **no commits** land in the window, say so plainly and stop - never invent a
 brief.
 
+#### Three ways this step silently under-reports the window
+
+Each of these has produced a thin brief that looked complete. Check all three
+before writing.
+
+**Is the clone shallow?** `git rev-parse --is-shallow-repository` -> `true` means
+history is truncated at a boundary, and `--since` returns only what lies after
+it. A 12-day window can come back as the last 3 days and read as a quiet
+fortnight. Either `git fetch --unshallow`, or source from the forge instead
+(merged PRs plus closed issues) and say in the brief which you used.
+
+**Select tickets by CLOSE DATE, never by a sprint or iteration field.** Board
+sprint fields are filled by automation that is often partial or was added
+mid-project, so filtering on one drops every ticket it never stamped - silently,
+because the query still returns a plausible-looking set. Compute both counts and
+use the date-based one:
+
+```bash
+gh issue list --repo <owner>/<repo> --state closed --limit 300 \
+  --search "closed:<start>..<end>" --json number,title,body,closedAt,labels
+```
+
+**Read bodies, not titles.** A title says a thing happened; the body says what it
+does, and that is the entire content of a brief. Pull `body` for every ticket and
+PR in the window and write from those. Writing from titles alone is the single
+most common cause of a brief that is technically accurate and says nothing - the
+feature is named but never described, so a reader cannot tell what is newly
+possible.
+
 ### 1b. Read the past briefs before writing a new one
 
 Read the previous brief - and skim further back when the window is long - so the
@@ -197,6 +226,25 @@ feature: `caption` (the "▶" demo line) and `image` (repo-relative screenshot
 path - when present the shot replaces the card row). Add `next` rows from
 `docs/todo.md` or the board's open epics for the dark "looking ahead" closer.
 
+**Budget the detail deliberately: `image` REPLACES the card row.** A slide with a
+picture carries only its `lead`, and the lead box is two lines - past roughly 300
+characters it runs into the picture frame. So a picture-on-every-slide deck holds
+about 300 words of substance in total, however large the window was. That is
+right for a few days and badly wrong for a sprint, where it produces a deck that
+names six features and describes none of them.
+
+Match the shape to the window:
+
+- **A few days, strong screenshots** -> pictures throughout, as below.
+- **A sprint or longer** -> render `both`. The deck skims, the Markdown carries
+  the detail, and neither is compromised to serve the other.
+- **Detail matters more than the image on a given feature** -> give that feature
+  card slides (three bodies of ~220 characters each, so ~3x the room) and keep
+  pictures for the features a picture genuinely sells.
+
+State the word count you ended up with if it is under ~600 for a multi-week
+window; that is the signal the format lost the content.
+
 The generator owns the design system - 16:9, dark title and closer, an
 at-a-glance agenda, numbered light feature slides with white cards, teal badges,
 Georgia/Calibri. **Do not restyle it from the spec.** If a new slide type is
@@ -205,9 +253,9 @@ genuinely needed, extend the generator using the same tokens.
 ### 5b. Render the page (`md`)
 
 ```markdown
-# Ship Brief — June 28, 2026
+# Ship Brief - June 28, 2026
 
-_A rundown of what shipped since the last brief (June 21 – June 28)._
+_A rundown of what shipped since the last brief (June 21 - June 28)._
 
 ## ✨ Build multi-step sessions from several patterns
 
@@ -215,7 +263,7 @@ _A rundown of what shipped since the last brief (June 21 – June 28)._
 
 Therapists can now chain several movement patterns into a single guided session
 and set a per-step dosage for each. One session can walk a patient through a
-whole protocol instead of being limited to a single movement — closer to how a
+whole protocol instead of being limited to a single movement - closer to how a
 real rehab plan is actually structured.
 
 ---

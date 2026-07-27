@@ -290,7 +290,7 @@ def next_slide(prs, layout, rows):
     textbox(s, 0.83, 1.04, 11.6, 0.9,
             [[("What we could build next", GEORGIA, 33, True, "FFFFFF")]])
     textbox(s, 0.86, 1.96, 11.6, 0.5,
-            [[("Candidate initiatives for the next phase — not yet shipped.",
+            [[("Candidate initiatives for the next phase - not yet shipped.",
                CALIBRI, 14, False, MUTE_ON_DARK)]])
     top, step = 2.78, 1.04
     for i, row in enumerate(rows[:4]):
