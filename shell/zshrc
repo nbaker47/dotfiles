@@ -183,3 +183,51 @@ grid() {
   fi
   tmux attach -t "$s"
 }
+
+# --- spawning agents into a VISIBLE pane, under herdr ------------------------
+# Background (learned the hard way 2026-07-27):
+#
+# herdr is the workspace manager -- it owns the sidebar, spaces, tabs and panes
+# you actually look at. It runs *inside* a single iTerm2 session. So the two
+# obvious ways to give an agent a visible pane both fail here:
+#
+#   * `tmux new-session -d` -- runs fine but is DETACHED. Nothing is ever
+#     attached to it, so the work happens off-screen. An agent can't fix this
+#     itself: `tmux attach` needs a terminal the agent doesn't have.
+#   * iTerm2 split panes (AppleScript, or Claude Code's native teammate panes)
+#     -- these split iTerm2's session, producing a pane *beside* herdr, outside
+#     its pane system entirely. Claude Code's teammate splits additionally fail
+#     under herdr with "Session '<uuid>' not found": herdr shells are
+#     daemon-backed and survive an iTerm2 restart, so the inherited
+#     ITERM_SESSION_ID goes stale and no longer resolves.
+#
+# The right answer is to use herdr's own socket API, which is reachable from
+# any subprocess (HERDR_* env vars are inherited, so agents can call it too):
+#   herdr pane split / herdr agent start / prompt / read / send-keys / wait
+#
+#   agentpane <name> [cwd] [prompt]      # spawn a named claude in a new pane
+#   agentpane arb ~/Code/income-bots "build X"
+#
+# Drive it afterwards with:
+#   herdr agent read <name>              # see its screen
+#   herdr agent send-keys <name> 2 enter # answer a permission prompt
+#   herdr agent prompt <name> "..."      # send another instruction
+agentpane() {
+  local name="${1:?usage: agentpane <name> [cwd] [prompt]}"
+  local cwd="${2:-$PWD}"
+  local prompt="${3:-}"
+
+  [ -n "$HERDR_ENV" ] || { echo "agentpane: not inside herdr" >&2; return 1; }
+
+  local pane
+  pane=$(herdr pane split --current --direction right --ratio 0.4 --cwd "$cwd" \
+         | python3 -c 'import json,sys; print(json.load(sys.stdin)["result"]["pane"]["pane_id"])') || {
+    echo "agentpane: split failed" >&2; return 1; }
+
+  herdr agent start "$name" --kind claude --pane "$pane" --timeout 90000 >/dev/null || {
+    echo "agentpane: agent failed to become ready in $pane" >&2; return 1; }
+
+  [ -n "$prompt" ] && herdr agent prompt "$name" "$prompt" >/dev/null
+  echo "agentpane: '$name' running in $pane (herdr agent read $name)"
+}
+
