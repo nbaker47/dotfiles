@@ -289,8 +289,17 @@ agentpane() {
          | python3 -c 'import json,sys; print(json.load(sys.stdin)["result"]["pane"]["pane_id"])') || {
     echo "agentpane: split failed" >&2; return 1; }
 
-  herdr agent start "$name" --kind claude --pane "$pane" --timeout 90000 >/dev/null || {
-    echo "agentpane: agent failed to become ready in $pane" >&2; return 1; }
+  # A freshly split pane needs a moment before its shell accepts an agent;
+  # herdr reports "agent_pane_busy: not an available shell" if we race it.
+  local tries=0
+  until herdr agent start "$name" --kind claude --pane "$pane" --timeout 90000 >/dev/null 2>&1; do
+    tries=$((tries + 1))
+    if [ "$tries" -ge 10 ]; then
+      echo "agentpane: agent failed to start in $pane after $tries tries" >&2
+      return 1
+    fi
+    sleep 2
+  done
 
   [ -n "$prompt" ] && herdr agent prompt "$name" "$prompt" >/dev/null
   echo "agentpane: '$name' running in $pane (herdr agent read $name)"
