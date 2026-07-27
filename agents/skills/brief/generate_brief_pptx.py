@@ -231,17 +231,24 @@ def feature_slide(prs, layout, num_label, f, repo_root):
     image = f.get("image")
     img_path = (repo_root / image) if image else None
     if img_path and img_path.exists():
-        # screenshot panel: white card frame with the image inside, caption below
-        rounded(s, 0.55, 2.55, 12.23, 4.15, "FFFFFF", line=CARD_BORDER, line_w=1.0,
-                radius=0.03)
+        # Screenshot slide: the frame hugs the image rather than being a fixed
+        # full-width panel, so a tall screenshot does not float in white space.
         pic = s.shapes.add_picture(str(img_path), Inches(0.8), Inches(2.8))
-        # scale to fit the panel
-        max_w, max_h = Inches(11.7), Inches(3.6)
-        ratio = min(max_w / pic.width, max_h / pic.height, 1.0)
+        max_w, max_h = Inches(11.5), Inches(3.95)
+        ratio = min(max_w / pic.width, max_h / pic.height)
         pic.width = int(pic.width * ratio)
         pic.height = int(pic.height * ratio)
-        pic.left = Inches(0.55) + int((Inches(12.23) - pic.width) / 2)
-        pic.top = Inches(2.65) + int((Inches(3.9) - pic.height) / 2)
+        pic.left = int((Inches(SLIDE_W) - pic.width) / 2)
+        pic.top = Inches(2.60)
+        pad = 0.14
+        card = rounded(s, Emu(pic.left).inches - pad, Emu(pic.top).inches - pad,
+                       Emu(pic.width).inches + 2 * pad,
+                       Emu(pic.height).inches + 2 * pad,
+                       "FFFFFF", line=CARD_BORDER, line_w=1.0, radius=0.03)
+        # the frame is drawn after the picture, so move it behind
+        tree = s.shapes._spTree
+        tree.remove(card._element)
+        tree.insert(list(tree).index(pic._element), card._element)
     else:
         cards = f.get("cards", [])[:3]
         xs = [0.55, 4.71, 8.87][:len(cards)]
