@@ -36,6 +36,14 @@
   want them on another machine, rsync/Syncthing the dir with the worker stopped — not git.
 
 ## Done
+- **Agent teams under herdr fixed (2026-07-27)** — `therdr` in `shell/zshrc` runs
+  claude inside tmux inside a herdr pane with `--teammate-mode tmux` pinned, so
+  teammates spawn as visible tmux panes. Root cause was `teammateMode: auto`:
+  outside tmux it picks the iterm2 backend and fails on a stale
+  ITERM_SESSION_ID (herdr shells outlive iTerm2 restarts); inside tmux it
+  silently degrades to in-process, so teammates work but are invisible. Full
+  write-up: `docs/agent-teams-herdr.md`. Also added `agentpane` for spawning
+  separate agents into herdr panes via its socket API.
 - **iTerm2 native split panes for teammates (2026-07-27)** — `it2` CLI added to the uv
   tools in `packages/install.sh`; iTerm2's Python API (`EnableAPIServer`) enabled by
   `bootstrap.sh` and committed into the tracked plist. A new machine no longer sees the
