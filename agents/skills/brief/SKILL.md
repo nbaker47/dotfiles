@@ -33,8 +33,9 @@ without ever reading a commit hash.
 - **repo name** (e.g. `platform`) to restrict a multi-repo scan.
 
 **Default window is since the LAST brief**: the newest dated file in the briefs
-directory (either format). If no brief exists yet, fall back to **today** (since
-local midnight). State the window you used in the output.
+directory, counting **both** `.md` and `.pptx` (see step 1). If no brief exists
+yet, fall back to **today** (since local midnight). State the window you used in
+the output.
 
 ## Where output goes
 
@@ -57,14 +58,48 @@ repo OR a container of nested repos (e.g. `~/Code/IHS` holds `platform/` and
 `kinoped/`):
 
 ```bash
-ls docs/briefs/*-brief.* 2>/dev/null | sort | tail -1     # the last brief
+ls docs/briefs/*.md docs/briefs/*.pptx 2>/dev/null | sort | tail -1   # the last brief
 find . -maxdepth 3 -name .git \( -type d -o -type f \) -prune | sed 's,/.git,,' | sort -u
 git -C "<repo>" log --since=<date> --no-merges \
   --pretty=format:'%h%x09%an%x09%s%x09%b%x1e' --name-only
 ```
 
+**Both formats count as briefs.** The history is mixed - some entries are
+`.pptx` decks, some `.md` pages, and the earliest may be a hand-seeded brief
+transcribed from a deck. Sort the whole directory by filename (the
+`YYYY-MM-DD` prefix sorts correctly) and take the newest **regardless of
+extension**; its date is the start of the window. Never look at only one
+extension - doing so re-reports features already covered by a brief in the
+other format.
+
 If **no commits** land in the window, say so plainly and stop - never invent a
 brief.
+
+### 1b. Read the past briefs before writing a new one
+
+Read the previous brief - and skim further back when the window is long - so the
+new one continues the story instead of repeating it. Check what was already
+announced, and what a previous "looking ahead" section promised (shipping
+something previously listed as proposed is worth calling out explicitly).
+
+- **Markdown** briefs: read the file directly.
+- **PPTX** briefs: extract the text (needs python-pptx):
+
+```bash
+python3 - <<'PY'
+from pptx import Presentation
+for i, s in enumerate(Presentation("docs/briefs/<file>.pptx").slides):
+    for sh in s.shapes:
+        if sh.has_text_frame and sh.text_frame.text.strip():
+            print(i, "|", sh.text_frame.text.strip().replace("\n", " / "))
+PY
+```
+
+The same extraction reads any external deck a user points at, which is how a
+briefs folder gets seeded from an existing Keynote or PowerPoint: export or read
+the deck, transcribe its content into a dated brief, and later briefs then
+measure from it. (Keynote `.key` files are not directly readable - use the
+`.pptx` export.)
 
 ### 2. Coalesce commits into features
 
