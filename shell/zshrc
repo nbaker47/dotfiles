@@ -292,7 +292,13 @@ agentpane() {
   # A freshly split pane needs a moment before its shell accepts an agent;
   # herdr reports "agent_pane_busy: not an available shell" if we race it.
   local tries=0
-  until herdr agent start "$name" --kind claude --pane "$pane" --timeout 90000 >/dev/null 2>&1; do
+  # Bypass permissions like therdr does -- these agents run unattended, and a
+  # blocked permission prompt stalls them until someone notices. Opt out with
+  # AGENTPANE_NO_BYPASS=1.
+  local -a perm
+  [ -z "$AGENTPANE_NO_BYPASS" ] && perm=(--dangerously-skip-permissions)
+
+  until herdr agent start "$name" --kind claude --pane "$pane" --timeout 90000 -- $perm >/dev/null 2>&1; do
     tries=$((tries + 1))
     if [ "$tries" -ge 10 ]; then
       echo "agentpane: agent failed to start in $pane after $tries tries" >&2
