@@ -1,11 +1,15 @@
 # dotfiles — todo
 
 ## Blocking (you must do)
-- **Restart iTerm2 to activate the Python API** (needed for native split-pane
-  teammates). `EnableAPIServer` is now set in both the live prefs domain and
-  `iterm/com.googlecode.iterm2.plist`, but iTerm2 only starts the API server at
-  launch — I couldn't restart it because this Claude session is running *inside*
-  iTerm2. After relaunching, check it with:
+- **Fully QUIT iTerm2 (⌘Q) to activate the Python API** (needed for native split-pane
+  teammates). `EnableAPIServer` is set in both the live prefs domain and
+  `iterm/com.googlecode.iterm2.plist`, but iTerm2 only reads it at launch.
+  **⌘Q, not ⌘W** — closing the window leaves the app running, so the API server
+  never starts. Check with `ps -p "$(pgrep -x iTerm2)" -o lstart,etime`: if the
+  elapsed time predates the pref change, it never restarted. Detaching/reattaching
+  a herdr session has no effect on this; herdr is unrelated.
+  Quitting is safe — herdr and tmux sessions are daemon-backed and survive it;
+  reattach with `herdr`. Then verify:
   ```bash
   it2 app theme     # should print the theme, not a connection error
   ```
