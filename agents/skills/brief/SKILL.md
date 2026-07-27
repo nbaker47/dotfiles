@@ -1,190 +1,200 @@
 ---
 name: brief
 description: >-
-  Generate a polished "Ship Brief" — a stakeholder-friendly, screenshot-rich
-  rundown of the features shipped in a time window (default: today). Scans every
-  git repo under the current directory, coalesces the raw commits into the
-  human features they collapse into, captures a screenshot of each visual
-  feature by driving the browser, and writes a narrative Markdown brief to
-  ~/Code/briefs. Use when the user asks for a "brief", "ship brief", "what did
-  we ship/build today", a "feature rundown", "release brief", "changelog with
-  screenshots", or a "showcase of today's work".
+  Generate a polished stakeholder brief of everything shipped since the last
+  brief - a screenshot-rich, benefit-first rundown of the features the raw
+  commits collapse into. Renders as a Keynote-styled .pptx deck (default) or a
+  narrative Markdown page (`/brief md`), saved into docs/briefs and committed.
+  Use when the user asks for a "brief", "ship brief", "what's new", "what did we
+  ship", a "feature rundown", "release brief", or a "showcase of recent work".
 ---
 
-# Ship Brief
+# Brief - what shipped, for stakeholders
 
-Turn a day's worth of raw commits into a **polished, benefit-first feature
-brief with screenshots** — the kind of thing you'd send a stakeholder, not a
-git changelog. The reader should come away knowing *what is newly possible* and
-*see* it, without ever reading a commit hash.
+Turn raw commits into a **polished, benefit-first feature brief with
+screenshots** - the kind of thing you send a stakeholder, not a git changelog.
+The reader should come away knowing *what is newly possible* and *see* it,
+without ever reading a commit hash.
 
-## When to use
+## Invocation
 
-Trigger on phrases like: "make me a brief", "/brief", "ship brief", "what did we
-ship today", "what did we build today", "feature rundown", "release brief",
-"daily showcase", "changelog with screenshots".
+    /brief              -> .pptx deck (default), window = since the last brief
+    /brief pptx         -> same, explicit
+    /brief md           -> narrative Markdown page instead
+    /brief both         -> render both formats from the same content
+    /brief md yesterday -> format plus a window / repo filter
 
-Optional argument (`$ARGUMENTS`) selects the window or repo:
-- *(none)* → **today** (since local midnight), all repos under cwd.
-- `yesterday`, `2026-06-20`, `"3 days ago"`, `"since last friday"` → passed to
-  `git log --since=...`. For a single calendar day also pass `--until` to the
-  next midnight.
-- a repo name (e.g. `platform`) → restrict to that repo.
-- combinations: `/brief platform yesterday`.
+`$ARGUMENTS` may carry, in any order:
 
-## Output conventions (do not deviate)
+- **format**: `pptx` (default) | `md` | `both`. Anything else is not a format.
+- **window**: `yesterday`, `2026-06-20`, `"3 days ago"`, `"since last friday"` -
+  passed to `git log --since=...`. For a single calendar day also pass `--until`
+  at the next midnight.
+- **repo name** (e.g. `platform`) to restrict a multi-repo scan.
 
-- File: `~/Code/briefs/<YYYY-MM-DD>-ship-brief.md` (use the window's end date; for
-  a multi-day range use `<start>_to_<end>-ship-brief.md`).
-- Screenshots: `~/Code/briefs/assets/<YYYY-MM-DD>/<feature-slug>.png`, referenced
-  from the Markdown with a **relative** path (`assets/<date>/<slug>.png`) so the
-  brief renders correctly when the `briefs` folder is moved or committed.
-- Title: `# Ship Brief — June 28, 2026` (long-form date).
-- Tone: **polished stakeholder brief.** Benefit-first prose. NO commit hashes,
-  NO file lists, NO "refactored X" engineering minutiae. Write what a user or a
-  non-engineer stakeholder would care about.
+**Default window is since the LAST brief**: the newest dated file in the briefs
+directory (either format). If no brief exists yet, fall back to **today** (since
+local midnight). State the window you used in the output.
+
+## Where output goes
+
+- **Inside a git repo** -> `docs/briefs/` (committed with the repo, so the brief
+  history lives beside the code). Create the directory if missing.
+- **Outside a repo** (e.g. run from `~/Code` across many repos) ->
+  `~/Code/briefs/`.
+- Files: `<YYYY-MM-DD>-brief.pptx` / `<YYYY-MM-DD>-brief.md`, dated by the
+  window's end. Multi-day ranges keep the end date; the range itself is printed
+  inside the brief.
+- Screenshots: `<briefs-dir>/assets/<YYYY-MM-DD>/<feature-slug>.png`, referenced
+  from Markdown by **relative** path so the folder stays portable.
 
 ## Pipeline
 
-### 1. Discover repos and collect commits
+### 1. Find the window and collect commits
 
-The invocation directory may be a single repo OR a container of nested repos
-(e.g. `~/Code/IHS` holds `platform/` and `kinoped/`). Find them all:
-
-```bash
-find . -maxdepth 3 -name .git -maxdepth 3 \( -type d -o -type f \) -prune \
-  | sed 's,/.git,,' | sort -u
-```
-
-For each repo, collect the window's commits with body and changed files:
+Find the last brief, then collect commits. The invocation directory may be one
+repo OR a container of nested repos (e.g. `~/Code/IHS` holds `platform/` and
+`kinoped/`):
 
 ```bash
-git -C "<repo>" log --since=midnight --no-merges \
+ls docs/briefs/*-brief.* 2>/dev/null | sort | tail -1     # the last brief
+find . -maxdepth 3 -name .git \( -type d -o -type f \) -prune | sed 's,/.git,,' | sort -u
+git -C "<repo>" log --since=<date> --no-merges \
   --pretty=format:'%h%x09%an%x09%s%x09%b%x1e' --name-only
 ```
 
-(Swap `--since=midnight` for the user's range; add `--until` for a single day.)
-If **no commits** in any repo for the window, tell the user plainly and stop —
-do not invent a brief.
+If **no commits** land in the window, say so plainly and stop - never invent a
+brief.
 
 ### 2. Coalesce commits into features
 
 Raw commits are not features. Collapse them:
 
 - **Drop non-feature noise** from the showcase: `docs`, `chore`, `test`,
-  `build`, `ci`, `style`, and pure dependency bumps. (You may mention a notable
-  infra/docs item in a short closing line, but it is not a feature card.)
-- **Group** the remaining `feat`/`fix`/`perf`/`refactor` commits that belong to
-  one shipped capability into a single feature. Strong signals:
-  - same Conventional-Commit scope (`feat(sessions:` + `fix(sessions:` → one).
-  - a `fix` that touches the same files as a `feat` from the same window is
-    almost always polish on that feature — fold it in.
-  - commits touching the same route/component cluster.
-- **Name each feature** from the user's point of view, not the commit subject.
-  `feat(sessions): chain multiple patterns + per-step dosage` →
+  `build`, `ci`, `style`, dependency bumps. A notable infra/docs item can earn a
+  single closing line, not a card of its own.
+- **Group** the `feat`/`fix`/`perf`/`refactor` commits belonging to one shipped
+  capability. Strong signals: the same Conventional-Commit scope
+  (`feat(sessions:` + `fix(sessions:` -> one feature); a `fix` touching the same
+  files as a `feat` in the window (polish - fold it in); commits touching the
+  same route or component cluster.
+- **Name each feature from the user's point of view**, not the commit subject.
+  `feat(sessions): chain multiple patterns + per-step dosage` ->
   *"Build multi-step sessions from several patterns, each with its own dosage."*
-- Order features by impact (new user-facing capability > enhancement > fix).
+- Order by impact: new user-facing capability > enhancement > fix. Aim for 4-8
+  features; fold the small stuff into one "Fit and finish" entry.
 
-Briefly confirm the coalesced feature list with the user before spending time on
-screenshots **only if** it's ambiguous (many commits, unclear grouping);
-otherwise proceed.
+Confirm the coalesced list with the user first **only if** the grouping is
+genuinely ambiguous; otherwise proceed.
 
 ### 3. Map each feature to a viewable URL
 
-For each feature, find a page that shows it off, from its changed files. This
-repo's web app is Next.js (App Router) at
-`platform/src/cloud/app/src/app`. Resolution order:
+Find a page that shows each feature off, from its changed files. For a Next.js
+App Router app (this repo's is at `src/cloud/app/src/app`):
 
-1. **A `page.tsx`/`page.ts` under `app/` changed** → derive the route from its
-   folder path. Strip route groups in parentheses (`(dashboard)`, `(auth)`).
-   `app/(dashboard)/sessions/page.tsx` → `/sessions`.
-2. **A dynamic segment** (`[id]`, `[sessionId]`) in the path → don't guess an
-   id. Navigate to the parent list page (`/sessions`), screenshot a real
-   instance by clicking the first row, or fall back to the list page itself.
-3. **Only a component changed** (e.g. `src/components/live/robot-viewer.tsx`) →
-   grep `app/` for who imports it to find the hosting route, then screenshot
-   that page:
-   ```bash
-   grep -rl "robot-viewer" platform/src/cloud/app/src/app
-   ```
-4. **Only `api/`, `lib/`, prisma, edge-service, or backend files changed** →
-   the feature has **no visual surface**. Skip the screenshot; write the card
-   with prose only (and, where helpful, a tiny representative code or data
-   snippet). Never fabricate a screenshot.
+1. **A `page.tsx` under `app/` changed** -> derive the route from its folder,
+   stripping route groups in parentheses. `app/(dashboard)/sessions/page.tsx`
+   -> `/sessions`.
+2. **A dynamic segment** (`[id]`) -> do not guess an id; open the parent list
+   page and click into a real instance, or screenshot the list itself.
+3. **Only a component changed** -> grep `app/` for its importer to find the
+   hosting route: `grep -rl "robot-viewer" src/cloud/app/src/app`.
+4. **Only `api/`, `lib/`, prisma, or edge-service files changed** -> no visual
+   surface. Write the entry prose-only. **Never fabricate a screenshot.**
 
-### 4. Capture screenshots — local-first, auto
+### 4. Capture screenshots (both formats use them)
 
-Pick the screenshot source automatically:
+Pick the source automatically:
 
-1. **Local dev** (`http://localhost:3000`): probe it
-   (`curl -sized -o /dev/null -w '%{http_code}' http://localhost:3000` or a
-   browser nav). If it responds AND a session is authenticated, use it — this
-   shows the freshest, just-committed code.
-2. **Auth check**: navigate to a protected route; if redirected to login,
-   prefer an already-authenticated existing Chrome tab/session. If still
-   unauthenticated, fall back to the deployed app rather than blocking on login.
-3. **Deployed app** fallback: the Cloud Run app
-   (`https://kinoped-app-66non5c3ka-uc.a.run.app`, or read the current URL from
-   the repo/CLAUDE.md if it changed). Note in the brief's footer which source
-   each screenshot came from only if it's the deployed one (so "shipped today
-   but not yet deployed" features are honestly flagged).
-4. **Nothing reachable** → write the feature cards text-only and add a short
-   note at the top: *"Screenshots skipped — no running app was reachable."*
+1. **Local dev** (`http://localhost:3000`) if it responds and is authenticated -
+   it shows the freshest, just-committed code.
+2. **Auth check**: if a protected route redirects to login, prefer an
+   already-authenticated Chrome tab; if still unauthenticated, fall back rather
+   than blocking on login.
+3. **Deployed app** fallback (read its URL from the repo's CLAUDE.md). Flag in
+   the brief when a shot came from the deployed app, so "shipped but not yet
+   deployed" stays honest.
+4. **Nothing reachable** -> text-only entries plus a short note saying
+   screenshots were skipped.
 
-Driving the browser (claude-in-chrome MCP — load via ToolSearch first, batched):
-`tabs_context_mcp` → reuse an authed tab or `tabs_create_mcp` → `navigate` →
-let the page settle → screenshot. Save each capture as a PNG into
-`~/Code/briefs/assets/<date>/<feature-slug>.png`. Frame the **relevant UI** (the
-new feature in view), not a generic dashboard. One clean screenshot per feature
-is enough; capture a second only if the feature is a flow worth two frames.
+Drive the browser with the claude-in-chrome MCP tools (load them via ToolSearch
+in ONE batched call): `tabs_context_mcp` -> reuse an authed tab or
+`tabs_create_mcp` -> `navigate` -> let it settle -> screenshot. Frame the
+**relevant UI**, not a generic dashboard. One clean shot per feature. If a page
+fails after 2-3 attempts, fall back and move on - do not rabbit-hole.
 
-Stay disciplined: if a page won't load or auth fails after 2–3 attempts, fall
-back (deployed → text-only) and move on. Do not rabbit-hole.
+### 5a. Render the deck (`pptx`, the default)
 
-### 5. Write the brief
+Write a JSON spec - the shape is documented at the top of
+`generate_brief_pptx.py`, which sits next to this file - then render it:
 
-Template (stakeholder tone — adapt, don't pad):
+```bash
+python3 <skill-dir>/generate_brief_pptx.py spec.json \
+  -o docs/briefs/$(date +%Y-%m-%d)-brief.pptx
+```
+
+Run from the repo root so repo-relative `image` paths resolve. Needs
+python-pptx: use a project venv, `pip install --user python-pptx`, or
+`uv run --with python-pptx python3 ...`.
+
+Per feature the spec wants: `area` (the eyebrow, uppercased), `title`, `lead`
+(1-2 benefit-first sentences), and exactly three `cards` - typically What /
+How it works / Why it matters, each body under ~220 characters. Optional per
+feature: `caption` (the "▶" demo line) and `image` (repo-relative screenshot
+path - when present the shot replaces the card row). Add `next` rows from
+`docs/todo.md` or the board's open epics for the dark "looking ahead" closer.
+
+The generator owns the design system - 16:9, dark title and closer, an
+at-a-glance agenda, numbered light feature slides with white cards, teal badges,
+Georgia/Calibri. **Do not restyle it from the spec.** If a new slide type is
+genuinely needed, extend the generator using the same tokens.
+
+### 5b. Render the page (`md`)
 
 ```markdown
 # Ship Brief — June 28, 2026
 
-_A rundown of what shipped today across the Kinoped platform._
+_A rundown of what shipped since the last brief (June 21 – June 28)._
 
 ## ✨ Build multi-step sessions from several patterns
 
 ![Multi-step sessions](assets/2026-06-28/multi-step-sessions.png)
 
-Therapists can now chain several movement patterns into a single guided
-session and set a per-step dosage (reps, sets, rest) for each. One session can
-walk a patient through a whole protocol instead of being limited to a single
-movement — closer to how a real rehab plan is actually structured.
-
-## 🎨 Branded loading experience and a redesigned dashboard
-
-![Running-leg loading screen](assets/2026-06-28/loading-screen.png)
-
-The app now greets you with an on-brand running-leg loading animation and a
-dashboard with more visual depth and clearer hierarchy, so the first thing you
-see feels like a finished product rather than a blank skeleton.
+Therapists can now chain several movement patterns into a single guided session
+and set a per-step dosage for each. One session can walk a patient through a
+whole protocol instead of being limited to a single movement — closer to how a
+real rehab plan is actually structured.
 
 ---
 
-_Also today: documentation for recording sessions against the deployed app with
-the local edge stack._
+_Also shipped: documentation for recording sessions against the deployed app._
 ```
 
-Rules for the prose:
-- One short `##` card per feature: emoji + plain-language title, screenshot (if
-  any), then 2–4 sentences of **benefit-first** copy.
-- No hashes, no filenames, no "we refactored". Say what's now possible.
-- Close with a one-line "Also today:" for noteworthy docs/infra, if any.
-- After writing, tell the user the path and offer to open it.
+One short `##` card per feature: emoji + plain-language title, the screenshot if
+there is one, then 2-4 sentences of benefit-first copy. No hashes, no filenames,
+no "we refactored" - say what is now possible. Close with a one-line
+"Also shipped:" for noteworthy docs/infra work.
+
+### 6. Check and commit
+
+- Reopen a rendered deck with python-pptx and confirm the slide count: title +
+  at-a-glance + one per feature (+ looking-ahead). Trim any card body that
+  overflows.
+- Commit **only** the brief and its assets - never `git add -A`:
+
+```bash
+git add docs/briefs/<name> && git commit -m "docs(brief): what shipped <range>"
+```
+
+- Follow the repo's ticket rules if it has them; a brief is granular work, so
+  slot it under the docs/tooling epic rather than opening a top-level ticket.
+- Tell the user the path, the window covered, and offer to open it.
 
 ## Notes
 
-- This skill lives in the user's dotfiles (`~/dotfiles/agents/skills/brief`) and
-  is global — it works in any repo, but the screenshot routing above is tuned
-  for the IHS/Kinoped Next.js app. In a different project, apply the same
-  strategy (page-file → route, component → hosting page, backend → text-only)
-  using that project's framework conventions.
-- The `~/Code/briefs` folder is the home for every brief; create it if missing.
+- Tone for both formats: **stakeholder, benefit-first.** No commit hashes, no
+  file lists, no engineering minutiae. Respect the repo's customer-facing copy
+  rules where it has them.
+- The screenshot routing above is tuned for a Next.js app; in another project
+  apply the same strategy (page file -> route, component -> hosting page,
+  backend -> text-only) with that framework's conventions.
