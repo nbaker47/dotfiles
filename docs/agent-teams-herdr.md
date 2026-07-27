@@ -85,6 +85,25 @@ ps aux | grep '[t]eammate-mode'   # expect: claude --teammate-mode tmux
 No status bar means no tmux, which means teammates silently degrade to
 in-process.
 
+## Layout
+
+Claude spawns one tmux pane per teammate, and each split carves space off the
+LEAD — with three teammates the orchestrator collapses to a ~46-column sliver
+while the teammates take the rest. `therdr` fixes this at session creation:
+
+- `main-pane-width 60%` + `select-layout main-vertical` — the lead gets one
+  tall pane, teammates stack in a column beside it.
+- session-scoped hooks on `after-split-window`, `client-resized` and
+  `pane-exited` re-apply it, so spawning or losing a teammate never drifts.
+
+Session-scoped matters: `tmux.conf` sets a GLOBAL `client-resized -> tiled`
+hook for the `grid` function. Session hooks override it for therdr only, so
+both keep working.
+
+Verified: three teammate spawns with no manual relayout left the lead at
+68x54 (full height) and teammates at 46 wide. Re-apply by hand any time with
+`tmux select-layout main-vertical`.
+
 ## Permissions
 
 Teammates inherit the lead's permission mode, and shift+tab only cycles

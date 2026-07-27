@@ -236,13 +236,27 @@ therdr() {
   if tmux has-session -t "$s" 2>/dev/null; then
     tmux attach -t "$s"
   else
+    # Layout: Claude splits a new pane per teammate, and by default each split
+    # carves space off the LEAD -- with three teammates the orchestrator ends up
+    # a ~46-column sliver. main-vertical instead gives the lead one tall pane and
+    # stacks teammates in a column beside it. The hooks re-apply it whenever a
+    # teammate is spawned or exits, so it never drifts.
+    # (tmux.conf sets a GLOBAL client-resized -> tiled hook for `grid`; these are
+    # session-scoped, so they override it for therdr sessions only.)
     # Known tradeoff -- say it out loud so it isn't a surprise later.
     echo "therdr: teammates get visible panes, but herdr's sidebar will NOT"
     echo "        track this session (it binds agents by scanning the pane's"
     echo "        foreground process, and that process is now tmux). Run plain"
     echo "        'claude' instead if you want herdr agent tracking."
-    # -A: attach if it raced into existence; keep the server alive per-session
-    tmux new-session -A -s "$s" -n claude claude --teammate-mode tmux $perm "$@"
+    # Create detached so the layout can be configured BEFORE attaching, then
+    # attach. (-A on new-session would block here with claude in the foreground.)
+    tmux new-session -d -s "$s" -n claude claude --teammate-mode tmux $perm "$@"
+    tmux set-option -t "$s" main-pane-width 60%
+    tmux set-hook   -t "$s" after-split-window 'select-layout main-vertical'
+    tmux set-hook   -t "$s" client-resized     'select-layout main-vertical'
+    tmux set-hook   -t "$s" pane-exited        'select-layout main-vertical'
+    tmux select-layout -t "$s" main-vertical
+    tmux attach -t "$s"
   fi
 }
 
