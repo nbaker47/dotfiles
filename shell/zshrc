@@ -318,6 +318,47 @@ print(max(panes, key=lambda p: p["rect"]["width"])["pane_id"])') || {
   done
 
   [ -n "$prompt" ] && herdr agent prompt "$name" "$prompt" >/dev/null
+  agentbalance
   echo "agentpane: '$name' running in $pane (herdr agent read $name)"
+}
+
+# Equalise the widths of every pane in the current tab.
+# Splitting the widest pane keeps NEW panes sane but never re-widens the ones
+# that were already narrow, so a row drifts (71/71/37/36). This walks the
+# boundaries left-to-right and pushes each one to its equal-share position.
+# `herdr pane resize --amount` is a fraction of the tab's width, so the delta
+# in columns converts directly. Run it any time the layout looks off.
+agentbalance() {
+  [ -n "$HERDR_ENV" ] || { echo "agentbalance: not inside herdr" >&2; return 1; }
+  local pass
+  for pass in 1 2 3; do          # a few passes: nested splits move together
+    herdr pane layout --current | python3 -c '
+import json, subprocess, sys
+
+layout = json.load(sys.stdin)["result"]["layout"]
+panes = sorted(layout["panes"], key=lambda p: p["rect"]["x"])
+total = layout["area"]["width"]
+if len(panes) < 2:
+    raise SystemExit(0)
+
+target = total / len(panes)
+if max(abs(p["rect"]["width"] - target) for p in panes) <= 2:
+    raise SystemExit(0)          # close enough; stop early
+
+# Push each interior boundary to where equal shares would put it.
+edge = layout["area"]["x"]
+for i, pane in enumerate(panes[:-1]):
+    edge += target
+    delta = edge - (pane["rect"]["x"] + pane["rect"]["width"])
+    if abs(delta) < 1:
+        continue
+    direction = "right" if delta > 0 else "left"
+    subprocess.run(
+        ["herdr", "pane", "resize", "--pane", pane["pane_id"],
+         "--direction", direction, "--amount", f"{abs(delta) / total:.4f}"],
+        stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+    )
+' 2>/dev/null || return 0
+  done
 }
 
