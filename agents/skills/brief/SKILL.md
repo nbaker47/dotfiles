@@ -152,6 +152,24 @@ Pick the source automatically:
 4. **Nothing reachable** -> text-only entries plus a short note saying
    screenshots were skipped.
 
+**Every feature slide in a deck must carry a screenshot.** A deck is a visual
+medium; a slide that is three text cards among six screenshot slides reads as a
+gap. So compose the deck around what you can actually show:
+
+- If a change has no visual surface (a backend engine, a simulator, internal
+  tooling), do **not** give it its own slide. Fold it into the lead of a slide
+  whose picture is genuinely related, or leave it out.
+- If a change's own page cannot render (a failing dependency, an unreachable
+  service), photograph the nearest surface that is genuinely the same feature
+  and say what is pictured in `caption`. Never let the caption imply the
+  picture shows something it does not.
+- Prefer fewer, stronger slides over padding with a near-empty page.
+- Interact before you shoot: a builder with two items added, a dialog actually
+  open, a list with real rows. An empty-state screenshot sells nothing.
+- Crop out development chrome (dev-tools badges, error overlays) before use.
+
+The Markdown format is looser - a text-only entry there is fine.
+
 Drive the browser with the claude-in-chrome MCP tools (load them via ToolSearch
 in ONE batched call): `tabs_context_mcp` -> reuse an authed tab or
 `tabs_create_mcp` -> `navigate` -> let it settle -> screenshot. Frame the
@@ -214,7 +232,20 @@ no "we refactored" - say what is now possible. Close with a one-line
 
 - Reopen a rendered deck with python-pptx and confirm the slide count: title +
   at-a-glance + one per feature (+ looking-ahead). Trim any card body that
-  overflows.
+  overflows. Assert every feature slide actually carries a picture rather than
+  trusting the spec:
+
+```bash
+python3 - <<'PY'
+from pptx import Presentation
+bad = []
+for i, s in enumerate(Presentation("docs/briefs/<file>.pptx").slides):
+    t = [sh.text_frame.text.strip() for sh in s.shapes if sh.has_text_frame and sh.text_frame.text.strip()]
+    if t and t[0].isdigit() and t[0] != "00" and not any(sh.shape_type == 13 for sh in s.shapes):
+        bad.append(i)
+print("feature slides missing a screenshot:", bad or "none")
+PY
+```
 - Commit **only** the brief and its assets - never `git add -A`:
 
 ```bash
