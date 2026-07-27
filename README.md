@@ -18,6 +18,11 @@ Claude Code, npm globals, uv tools) — and only then symlinks the configs, sinc
 Then **quit and reopen iTerm2** (so it loads prefs from this repo), open a new
 shell, and run `grid` for the 2×2 Claude tmux layout.
 
+**Setting this up with Claude?** Point it at
+[`docs/for-claude-on-a-new-machine.md`](docs/for-claude-on-a-new-machine.md) —
+install + verification steps, how the agent helpers (`therdr`, `agentpane`)
+work under herdr, and the gotchas that already cost hours here.
+
 ```bash
 ~/dotfiles/bootstrap.sh --links-only     # skip installs, just re-link configs (fast)
 ~/dotfiles/bootstrap.sh --packages-only  # install/update tools, leave symlinks alone

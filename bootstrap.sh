@@ -99,11 +99,12 @@ echo "==> Pointing iTerm2 at $REPO/iterm"
 defaults write com.googlecode.iterm2 PrefsCustomFolder -string "$REPO/iterm"
 defaults write com.googlecode.iterm2 LoadPrefsFromCustomFolder -bool true
 
-# Python API (Settings > General > Magic > Enable Python API). Required by the
-# `it2` CLI, which is what lets Claude Code open teammates as native iTerm2 split
-# panes instead of falling back to a separate tmux session. Setting it here means
-# a new machine never has to click through the "iTerm2 Split Pane Setup" prompt.
-# Also committed in iterm/com.googlecode.iterm2.plist, so it survives either path.
+# Python API (Settings > General > Magic > Enable Python API), for the `it2` CLI.
+# NOTE: this is NOT how teammates get panes on a herdr machine. iTerm2 splits land
+# *beside* herdr, outside its pane system, and fail outright when the inherited
+# ITERM_SESSION_ID has gone stale (herdr shells survive iTerm2 restarts). Use
+# `therdr` (tmux inside the herdr pane) or `agentpane` instead -- see
+# docs/agent-teams-herdr.md. Kept enabled only for non-herdr iTerm2 use.
 defaults write com.googlecode.iterm2 EnableAPIServer -bool true
 echo "  iTerm2: Python API enabled (for it2 / teammate split panes)."
 echo "  iTerm2: QUIT AND REOPEN iTerm for prefs (yaquake hotkey, keymaps, Python API) to load."
