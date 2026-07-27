@@ -105,6 +105,27 @@ and teammates fall back to tmux. Verify with `it2 app theme` — it should print
 theme rather than a connection error. The first connection also raises an iTerm2
 permission prompt to approve.
 
+## The agent kit is also installable via claude-harness
+
+The agent kit — the plugins + marketplaces in `claude/settings.json` (claude-mem,
+frontend-design, gopls-lsp + the thedotmack marketplace), the Agent Teams flags, and
+the vendored skills in `agents/skills/` — is mirrored in
+[nbaker47/claude-harness](https://github.com/nbaker47/claude-harness) as `kit/`, with
+`kit/install-kit.sh` installing it globally into `~/.claude`.
+
+- **On this machine, dotfiles stays the source of truth.** Everything is symlinked
+  from here (`~/.claude/settings.json`, `~/.agents/skills`, the per-skill links in
+  `~/.claude/skills`), and the harness installer respects that: its settings merge is
+  add-if-absent (it writes *through* the symlink into this repo, and is a no-op when
+  the keys are already set), and it skips any skill already present rather than
+  fighting the symlinks. Do NOT delete the copies here — they are live symlink targets.
+- **On a new machine you can get the kit either way**: `bootstrap.sh` (full dotfiles —
+  shell, iTerm2, packages, the lot) or `claude-harness/kit/install-kit.sh` (just the
+  Claude agent kit, no shell/terminal config). Running both is safe; whichever comes
+  second finds everything in place and changes nothing.
+- When the kit changes here (new plugin, new skill), refresh the harness's `kit/` copy
+  so both installers stay equivalent.
+
 ## How each piece syncs
 
 - **Symlinked files** (claude, shell, tmux, karabiner, git): edits to the live

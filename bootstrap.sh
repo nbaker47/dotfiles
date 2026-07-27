@@ -78,6 +78,12 @@ link git/gitconfig "$HOME/.gitconfig"
 
 # Agent skills — vendored content lives in the repo; symlinking ~/.agents/skills
 # back into it means future `npx skills add ...` installs auto-track in git.
+# NOTE: the agent kit (these skills + the plugins/marketplaces/teams flags in
+# claude/settings.json) is also installable standalone via
+# https://github.com/nbaker47/claude-harness -> kit/install-kit.sh. On a machine
+# bootstrapped from dotfiles that installer is a no-op (it skips anything already
+# present and never overwrites settings keys); on a machine without dotfiles it
+# delivers just the Claude agent kit.
 link agents/skill-lock.json "$HOME/.agents/.skill-lock.json"
 link agents/skills          "$HOME/.agents/skills"
 # Recreate the per-skill symlinks Claude Code reads from ~/.claude/skills/<name>

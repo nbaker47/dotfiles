@@ -15,6 +15,14 @@
 - On each *other* machine: `git clone https://github.com/nbaker47/dotfiles ~/dotfiles && ~/dotfiles/bootstrap.sh`.
 
 ## Follow-ups
+- **Agent kit now also ships via claude-harness (2026-07-28)** — the plugins +
+  marketplaces + Agent Teams flags from `claude/settings.json` and the vendored
+  skills in `agents/skills/` are mirrored as `kit/` in
+  https://github.com/nbaker47/claude-harness (`kit/install-kit.sh`, global,
+  idempotent, add-if-absent). Dotfiles remains the source of truth on this machine
+  (live symlink targets — do not delete the copies here); new machines can use
+  either installer. When adding a plugin/skill here, refresh the harness `kit/`
+  copy so the two stay equivalent.
 - **Remove the old curl-installed herdr**: `rm ~/.local/bin/herdr`. `herdr` is now a
   Homebrew formula (`brew install herdr`, tracked in `packages/Brewfile`), but
   `~/.local/bin` comes earlier in PATH so the old binary shadows it — Homebrew warns
