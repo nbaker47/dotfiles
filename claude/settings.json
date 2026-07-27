@@ -1,23 +1,42 @@
 {
-  "includeCoAuthoredBy": false,
+  "attribution": {
+    "commit": "",
+    "pr": ""
+  },
+  "effortLevel": "high",
+  "enabledPlugins": {
+    "claude-mem@thedotmack": true,
+    "frontend-design@claude-plugins-official": true,
+    "gopls-lsp@claude-plugins-official": true
+  },
   "env": {
     "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"
-  },
-  "teammateMode": "auto",
-  "enabledPlugins": {
-    "gopls-lsp@claude-plugins-official": true,
-    "claude-mem@thedotmack": true,
-    "frontend-design@claude-plugins-official": true
   },
   "extraKnownMarketplaces": {
     "thedotmack": {
       "source": {
-        "source": "github",
-        "repo": "thedotmack/claude-mem"
+        "repo": "thedotmack/claude-mem",
+        "source": "github"
       }
     }
   },
-  "effortLevel": "high",
-  "tui": "fullscreen",
-  "skipDangerousModePermissionPrompt": true
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "command": "bash '/Users/user/.claude/hooks/herdr-agent-state.sh' session",
+            "timeout": 10,
+            "type": "command"
+          }
+        ],
+        "matcher": "*"
+      }
+    ]
+  },
+  "includeCoAuthoredBy": false,
+  "model": "opus",
+  "skipDangerousModePermissionPrompt": true,
+  "teammateMode": "auto",
+  "tui": "fullscreen"
 }
