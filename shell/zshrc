@@ -184,7 +184,49 @@ grid() {
   tmux attach -t "$s"
 }
 
+# --- therdr: tmux+herdr combo so Claude Code AGENT TEAMS actually work -------
+# The problem it solves: Claude Code's native teammate panes split *iTerm2's*
+# session. Under herdr that's wrong twice over -- the split lands beside herdr
+# instead of inside its pane system, and it usually fails outright with
+# "Session '<uuid>' not found" because herdr shells are daemon-backed and
+# survive iTerm2 restarts, leaving a stale inherited ITERM_SESSION_ID.
+#
+# Fix: run claude inside tmux, inside the herdr pane. Claude Code then has a
+# tmux to split, so teammates become tmux panes *within this herdr pane* --
+# visible where you're already looking, and real Agent-tool teammates (shared
+# context, structured results, SendMessage) rather than separate CLIs being
+# puppeteered.
+#
+#   therdr                # start/attach a claude team session for this dir
+#   therdr --model opus   # extra args are passed through to claude
+#
+# Session is named per-directory, so re-running reattaches instead of stacking.
+# Detach with Ctrl-b d; `therdr` again to come back.
+# --teammate-mode is the load-bearing bit. Valid values are auto|tmux|iterm2|
+# in-process. The default "auto" is wrong in both directions here: outside tmux
+# it picks iterm2 and the spawn FAILS ("Session '<uuid>' not found"), and inside
+# tmux it silently falls back to in-process -- teammates still work, but you
+# never see them. Pinning "tmux" gets real teammates in panes you can watch.
+therdr() {
+  if [ -n "$TMUX" ]; then          # already inside tmux: nothing to set up
+    command claude --teammate-mode tmux "$@"
+    return
+  fi
+  command -v tmux >/dev/null || { echo "therdr: tmux not installed" >&2; return 1; }
+
+  local s="therdr-${PWD:t}"
+  if tmux has-session -t "$s" 2>/dev/null; then
+    tmux attach -t "$s"
+  else
+    # -A: attach if it raced into existence; keep the server alive per-session
+    tmux new-session -A -s "$s" -n claude claude --teammate-mode tmux "$@"
+  fi
+}
+
 # --- spawning agents into a VISIBLE pane, under herdr ------------------------
+# Use this when you want a SEPARATE agent you drive from outside (herdr agent
+# prompt/read/send-keys). For real in-context teammates, use `therdr` above.
+#
 # Background (learned the hard way 2026-07-27):
 #
 # herdr is the workspace manager -- it owns the sidebar, spaces, tabs and panes

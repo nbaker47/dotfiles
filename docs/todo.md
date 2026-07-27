@@ -1,20 +1,11 @@
 # dotfiles — todo
 
 ## Blocking (you must do)
-- **Fully QUIT iTerm2 (⌘Q) to activate the Python API** (needed for native split-pane
-  teammates). `EnableAPIServer` is set in both the live prefs domain and
-  `iterm/com.googlecode.iterm2.plist`, but iTerm2 only reads it at launch.
-  **⌘Q, not ⌘W** — closing the window leaves the app running, so the API server
-  never starts. Check with `ps -p "$(pgrep -x iTerm2)" -o lstart,etime`: if the
-  elapsed time predates the pref change, it never restarted. Detaching/reattaching
-  a herdr session has no effect on this; herdr is unrelated.
-  Quitting is safe — herdr and tmux sessions are daemon-backed and survive it;
-  reattach with `herdr`. Then verify:
-  ```bash
-  it2 app theme     # should print the theme, not a connection error
-  ```
-  The first connection also pops an iTerm2 permission prompt — approve it. Until
-  this is done, teammates keep falling back to a separate tmux session.
+- ~~**Fully QUIT iTerm2 (⌘Q) to activate the Python API**~~ — **done, and it turned
+  out to be the wrong fix anyway.** iTerm2 restarted 2026-07-27 15:07 and the API
+  socket is live (`EnableAPIServer=1`), but native iTerm2 split-pane teammates are
+  still not what we want **under herdr** — see the resolved note below. Kept only
+  because the Python API is still needed for non-herdr iTerm2 use.
 - **Quit and reopen iTerm2** so it loads prefs from `~/dotfiles/iterm` (yaquake
   dropdown hotkey + keymaps won't apply until relaunch). Same restart covers both.
 - **(Optional) Make the repo public** if you still want that — Claude's safety
