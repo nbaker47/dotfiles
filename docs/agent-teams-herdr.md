@@ -26,8 +26,18 @@ Claude Code picks a teammate backend via `--teammate-mode`
 
 | Where you run it | `auto` resolves to | Result |
 |---|---|---|
-| Outside tmux (plain herdr pane) | `iterm2` | **Spawn fails**: `Failed to create iTerm2 split pane: Session '<uuid>' not found` |
-| Inside tmux | `in-process` | Teammates work, but are **invisible** — no pane is ever created |
+| Outside tmux (plain herdr pane) | `iterm2` | **Spawn fails outright** — `Failed to create iTerm2 split pane: Session '<uuid>' not found`. It does NOT fall back to in-process. |
+| Inside tmux | `tmux` | Teammates spawn as visible tmux panes |
+
+**Therefore `teammateMode` is pinned to `in-process` in `claude/settings.json`.**
+Plain `claude` in a herdr pane is the daily driver (herdr tracks it), and with
+`auto` the Agent tool is simply broken there. `in-process` makes teammates work
+— invisible, but working. `therdr` still overrides it to `tmux` on the command
+line when you want to watch them.
+
+Note: the mode is snapshotted at process start
+(`captureTeammateModeSnapshot`), so editing settings.json does NOT affect a
+running session — restart claude for a change to take effect.
 
 `--teammate-mode tmux` is the fix. That's the one load-bearing flag in `therdr`.
 
@@ -153,7 +163,7 @@ task title instead of the literal string "therdr".
 | You want | Run | Cost |
 |---|---|---|
 | Visible teammate panes | `therdr` | herdr sidebar won't track the session |
-| herdr agent tracking | `claude` | teammates fall back to invisible in-process |
+| herdr agent tracking | `claude` | teammates run in-process — working but invisible (requires teammateMode pinned; with `auto` they fail outright) |
 
 Fixing this properly needs herdr to support a trusted report path (or tmux-aware
 detection) — worth raising upstream.
