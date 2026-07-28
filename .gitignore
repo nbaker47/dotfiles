@@ -1,10 +1,6 @@
 # Backups created by bootstrap.sh
 .dotfiles-backup/
 
-# Runtime coordination files (only the README template is tracked)
-claude/comm/*
-!claude/comm/README.md
-
 # iTerm writes transient state into its prefs folder; track only the plist
 iterm/*
 !iterm/com.googlecode.iterm2.plist

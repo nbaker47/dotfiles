@@ -15,36 +15,15 @@ Get `<current-session-id>` from the **transcript/task-output path in your own co
 file, so the newest one may belong to a different agent. Always show the actual ID, never the
 placeholder. Keep it as the final line of the response.
 
-## Parallel-session awareness — `~/.claude/comm/`
+## Multi-agent coordination — use Agent Teams
 
-I usually run several Claudes at once in different terminals (often ~8), across one or
-many projects. Use a single **global** comm directory so every agent knows what the
-others are doing — both to avoid clobbering shared work (same files, ports, processes,
-devices, CI/cloud sessions) and just for general awareness of who's working on what.
+I run several agents at once. Coordinate through **Agent Teams**, not a shared file:
+use `SendMessage` to hand off, flag conflicts, and report status, and the shared task
+list to claim lanes. Within a bakr session teammates spawn as visible panes, so the
+team roster is the picture of who is doing what.
 
-- **Location:** `~/.claude/comm/` (global — spans all projects). **One file per agent:**
-  `~/.claude/comm/<your-label>.md`. You write **only your own file**, never edit another
-  agent's — so any number of agents can run without ever colliding on the same file.
-  (It lives under `~/.claude`, so it's never committed to any repo.)
-- **First line is a one-line status**, so others can skim the whole picture without
-  reading every entry:
-  `🟢 <label> · <project> · <one-line what you're doing> · <YYYY-MM-DD HH:MM TZ>`
-  Status glyph: 🟢 active · ⏸️ paused · ✅ done.
-- **At session start:** skim everyone's first line (read the dir, it's tiny). Read an
-  entry **in full** only when it touches your project or a resource you need. You don't
-  have to read all of it — the one-liners are the index.
-- **Register your file when you start**, keep it current as you go, and on finish set the
-  status to ✅ done (or delete your file). Treat entries with stale timestamps / from
-  sessions that have clearly ended as abandoned — don't block on them.
-- **Before acting on shared state** — editing a file, or killing/restarting a port,
-  process, sim/device, dev server, or CI/cloud session a 🟢 agent owns — check their
-  entry first and leave a note in *your* file; wait or redirect if it's truly contended.
-- **Identity = your short label + this session's id** (the same id you print for the
-  resume command), so a dead session is easy to spot.
-
-Body fields under the one-line header: **Doing · Project (cwd) · Files/areas ·
-Owns** (ports · dev servers · devices · CI/cloud · bg jobs) **· Heads-up · Status.**
-Create `~/.claude/comm/` if it doesn't exist.
+The old `~/.claude/comm/` status-file convention is **retired** — Agent Teams replaces
+it. Do not create or read `~/.claude/comm/` files.
 
 ## Commits
 
