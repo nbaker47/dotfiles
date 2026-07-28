@@ -51,6 +51,6 @@
     "command": "bash ~/.claude/statusline-command.sh",
     "type": "command"
   },
-  "teammateMode": "in-process",
+  "teammateMode": "tmux",
   "tui": "fullscreen"
 }
