@@ -57,7 +57,8 @@ for no reproducibility win. `brew bundle` covers it in one declarative file.
 
 | Path | Symlinks to | What |
 |------|-------------|------|
-| `claude/CLAUDE.md` | `~/.claude/CLAUDE.md` | Global Claude Code instructions (resume cmd, Agent Teams coordination, commits, todo.md) |
+| `claude/CLAUDE.md` | `~/.claude/CLAUDE.md` | Global Claude Code instructions (resume cmd, Agent Teams coordination, commits, todo.md, worktree parking lot) |
+| `claude/hooks/worktree-*.sh` | `~/.claude/hooks/worktree-*.sh` | `WorktreeCreate`/`WorktreeRemove` hooks: Claude Code worktrees go to `~/worktrees/<repo>/<name>`, never into `~/Code` |
 | `claude/settings.json` | `~/.claude/settings.json` | Claude Code settings - enabled plugins (incl. **claude-mem**) + marketplaces, plus **Agent Teams** always on (see below). Plugins auto-install from these on first run. |
 | `claude/statusline-command.sh` | `~/.claude/statusline-command.sh` | Claude Code status line, ported from the zsh PS1: `[dir] [git branch] [k8s ns@cluster] <model>` |
 | `shell/zshrc` | `~/.zshrc` | zsh + oh-my-zsh + p10k; aliases; the **`grid`** 2×2 Claude tmux launcher |

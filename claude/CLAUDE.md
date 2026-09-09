@@ -54,3 +54,21 @@ Rules:
 - Group by area or status (e.g. "## Blocking", "## Follow-ups", "## Done") if the list grows.
 - When I finish a task, mention in chat that I've updated `docs/todo.md`, but the list itself
   is the source of truth — not the conversation.
+
+## Worktrees live in ~/worktrees, never in ~/Code
+
+Worktrees must not land in the `~/Code` tree - not as `~/Code/<repo>-<lane>` siblings and
+not nested under the checkout. The parking lot is **`~/worktrees/<repo>/<name>`**, one
+folder per repo, and `~/Code` holds only real checkouts.
+
+- **Claude-made worktrees** (`--worktree`, `EnterWorktree`, `isolation: worktree`
+  subagents, background sessions) already go there: the `WorktreeCreate` /
+  `WorktreeRemove` hooks in `~/.claude/settings.json` (`~/.claude/hooks/worktree-*.sh`)
+  own creation and cleanup. Do not work around them with `git worktree add`.
+- **Hand-made worktrees** follow the same rule:
+  `git worktree add ~/worktrees/<repo>/<name> -b <branch>` - never `../<repo>-<name>`.
+- **Clean up** when a lane is done: `git worktree remove ~/worktrees/<repo>/<name>` from
+  the main checkout, then `git worktree prune`. A worktree with unpushed work is kept
+  until its owner decides.
+- Existing sibling worktrees (e.g. `~/Code/IHS/platform-*`) are legacy; migrate them to
+  the parking lot when convenient, do not create more.

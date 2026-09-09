@@ -59,6 +59,11 @@ echo "==> Linking dotfiles from $REPO"
 link claude/CLAUDE.md        "$HOME/.claude/CLAUDE.md"
 link claude/settings.json    "$HOME/.claude/settings.json"
 link claude/statusline-command.sh "$HOME/.claude/statusline-command.sh"
+# Worktree parking lot: WorktreeCreate/Remove hooks that keep Claude Code worktrees
+# under ~/worktrees/<repo>/<name> instead of inside (or beside) the checkout.
+for hook in "$REPO"/claude/hooks/*.sh; do
+  link "claude/hooks/$(basename "$hook")" "$HOME/.claude/hooks/$(basename "$hook")"
+done
 # (settings.local.json is intentionally machine-local and NOT linked)
 
 # Shell (zsh + powerlevel10k + the `grid` tmux Claude launcher live in zshrc)
