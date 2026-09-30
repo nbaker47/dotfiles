@@ -72,3 +72,25 @@ folder per repo, and `~/Code` holds only real checkouts.
   until its owner decides.
 - Existing sibling worktrees (e.g. `~/Code/IHS/platform-*`) are legacy; migrate them to
   the parking lot when convenient, do not create more.
+
+## claude-mem can fill the disk (observer self-recording loop)
+
+The claude-mem plugin's background observer runs headless `claude` sessions in
+`~/.claude-mem/observer-sessions`. Those sessions fire claude-mem's own hooks, so the observer
+records its own ever-growing prompt as a "user prompt" and loops. It filled the disk twice:
+Jul 2026, then Sep 2026, when `~/.claude-mem` reached 147 GB (`chroma/` 106 GB,
+`claude-mem.db` 44 GB) against only about 4.5k real observations.
+
+- **Stop the loop:** `~/.claude-mem/settings.json` must have
+  `"CLAUDE_MEM_EXCLUDED_PROJECTS": "~/.claude-mem/observer-sessions,~/.claude-mem/observer-sessions/**"`.
+  The globs are matched against the full cwd, so a bare `observer-sessions` doesn't match.
+  Re-check this after any claude-mem update or reinstall.
+- **Check it:** if the Mac is low on disk or `~/.claude-mem` is over about 5 GB, run
+  `du -sh ~/.claude-mem/*` and count the `user_prompts` rows over 100 KB from project
+  `observer-sessions`.
+- **Clean up:** build a clean copy with `~/.claude-mem/cleanup/build_clean.py`, swap it in with the
+  worker stopped, and delete `chroma/`, which rebuilds itself from SQLite. Keep every observation
+  and summary, including ones tagged `observer-sessions`; they're real memories. The observer's own
+  transcripts in `~/.claude/projects/-Users-user--claude-mem-observer-sessions/` are also throwaway;
+  delete any older than a day.
+- **Full write-up:** `~/Code/docs/claude-mem-observer-loop.md`.
