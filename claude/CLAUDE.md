@@ -38,23 +38,6 @@ it. Do not create or read `~/.claude/comm/` files.
 - **Prefer rebase merges** (`gh pr merge --rebase`), not merge commits.
 - **No `Co-Authored-By: Claude` trailer** and no "🤖 Generated with Claude Code" footer.
 
-## Track follow-ups in docs/todo.md
-
-Whenever a task leaves loose ends, record them in `docs/todo.md` at the project root
-(create the file and `docs/` dir if missing) — do NOT just mention them in chat. This covers:
-
-- **Things the user must do later**: deploys, store/console config, DNS, manual verification,
-  credentials, anything outside the code I can't run myself.
-- **Things I didn't finish**: stubbed or `TEMP` code, deferred fixes, known bugs left for later,
-  partial implementations.
-
-Rules:
-- Keep it current: add items as they arise; check off / remove items once they're actually done.
-- Each item: a short imperative line, the affected file/path if relevant, and *why* it's pending.
-- Group by area or status (e.g. "## Blocking", "## Follow-ups", "## Done") if the list grows.
-- When I finish a task, mention in chat that I've updated `docs/todo.md`, but the list itself
-  is the source of truth — not the conversation.
-
 ## Worktrees live in ~/worktrees, never in ~/Code
 
 Worktrees must not land in the `~/Code` tree - not as `~/Code/<repo>-<lane>` siblings and
