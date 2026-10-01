@@ -38,6 +38,29 @@ it. Do not create or read `~/.claude/comm/` files.
 - **Prefer rebase merges** (`gh pr merge --rebase`), not merge commits.
 - **No `Co-Authored-By: Claude` trailer** and no "🤖 Generated with Claude Code" footer.
 
+## Writing emails - follow the email scripture
+
+Any email drafted for me (replies, follow-ups, outreach) MUST follow
+`~/Code/claude-harness/docs/email-scripture.md`. Read it before writing the first draft; it
+was built from my own sent mail and it is the objective function, not a suggestion. The
+points that matter most:
+
+- **Draft in chat first.** Create the Gmail draft only when I say so, and never send - I
+  send it myself. To change a Gmail reply draft, create a new reply draft and delete the old
+  one (updating in place detaches it from the thread).
+- **Short and plain.** `Hi <first name>,` then one line of specific thanks, then the answer in
+  one to three sentences, then `Best,` / `Thanks and regards,` and `Nathan`. My first edit is
+  almost always a cut, so start short.
+- **State facts, do not push.** Say what depends on what and stop. No repeated asks, no "as
+  soon as possible", no chasing someone who already said they are on it.
+- **Warm in one specific place, sized to the moment.** "More polite" means one more thank-you,
+  not more words.
+- **My voice:** contractions, British spelling, "Just wanted to ...", "Happy to ...", "Let me
+  know if ...". No em dashes, no bold, no emojis, no corporate filler ("I hope this finds you
+  well", "please don't hesitate", "kindly").
+
+If I correct a draft in a way the scripture does not cover, update the scripture.
+
 ## Worktrees live in ~/worktrees, never in ~/Code
 
 Worktrees must not land in the `~/Code` tree - not as `~/Code/<repo>-<lane>` siblings and
