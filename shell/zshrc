@@ -219,41 +219,20 @@ therdr() {
     return
   fi
 
-  # Layer 2: tmux. Same session and layout as tclaude, under a therdr- name.
-  echo "therdr: teammates get visible panes, but herdr's sidebar will NOT"
-  echo "        track this session (it binds agents by scanning the pane's"
-  echo "        foreground process, and that process is now tmux). Run plain"
-  echo "        'claude' instead if you want herdr agent tracking."
-  TCLAUDE_PREFIX=therdr TCLAUDE_NO_BYPASS="$THERDR_NO_BYPASS" tclaude "$@"
-}
-
-# --- tclaude: claude inside tmux, so AGENT TEAMS open in their own panes ------
-# Teammates only get visible panes when claude itself runs inside tmux; started
-# straight from a terminal it falls back to in-process and you never see them.
-# This starts (or re-attaches to) a tmux session for the current directory with
-# claude as the lead on the left and each teammate stacked in a column beside it.
-#
-#   tclaude                # start/attach the team session for this dir
-#   tclaude --model opus   # extra args are passed through to claude
-#
-# Detach with Ctrl-b d; `tclaude` again to come back. Works in any terminal.
-tclaude() {
-  command -v tmux >/dev/null || { echo "tclaude: tmux not installed" >&2; return 1; }
-
   # Bypass permissions: teammates inherit the lead's mode, and shift+tab can
   # only cycle manual/accept-edits/plan -- "bypass permissions on" is
   # unreachable unless the process was LAUNCHED with the flag. Set
-  # TCLAUDE_NO_BYPASS=1 to opt out for a run.
+  # THERDR_NO_BYPASS=1 to opt out for a run.
   local -a perm
-  [ -z "$TCLAUDE_NO_BYPASS" ] && perm=(--dangerously-skip-permissions)
+  [ -z "$THERDR_NO_BYPASS" ] && perm=(--dangerously-skip-permissions)
 
-  # Claude Code needs a tmux to split for teammates.
+  # Layer 2: tmux, so Claude Code has panes to split for teammates.
   if [ -n "$TMUX" ]; then          # already inside tmux: nothing to set up
     command claude --teammate-mode tmux $perm "$@"
     return
   fi
 
-  local s="${TCLAUDE_PREFIX:-claude}-${PWD:t}"
+  local s="therdr-${PWD:t}"
   if tmux has-session -t "$s" 2>/dev/null; then
     tmux attach -t "$s"
   else
@@ -263,7 +242,12 @@ tclaude() {
     # stacks teammates in a column beside it. The hooks re-apply it whenever a
     # teammate is spawned or exits, so it never drifts.
     # (tmux.conf sets a GLOBAL client-resized -> tiled hook for `grid`; these are
-    # session-scoped, so they override it for these sessions only.)
+    # session-scoped, so they override it for therdr sessions only.)
+    # Known tradeoff -- say it out loud so it isn't a surprise later.
+    echo "therdr: teammates get visible panes, but herdr's sidebar will NOT"
+    echo "        track this session (it binds agents by scanning the pane's"
+    echo "        foreground process, and that process is now tmux). Run plain"
+    echo "        'claude' instead if you want herdr agent tracking."
     # Create detached so the layout can be configured BEFORE attaching, then
     # attach. (-A on new-session would block here with claude in the foreground.)
     tmux new-session -d -s "$s" -n claude claude --teammate-mode tmux $perm "$@"
