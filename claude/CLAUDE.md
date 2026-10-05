@@ -79,6 +79,12 @@ folder per repo, and `~/Code` holds only real checkouts.
 - Existing sibling worktrees (e.g. `~/Code/IHS/platform-*`) are legacy; migrate them to
   the parking lot when convenient, do not create more.
 
+## Never put files on the Desktop
+
+Do not create, copy or save anything in `~/Desktop`, including demo output or files meant for me to
+look at. Outputs go in the project they belong to (or its own output folder); throwaway files go in
+the session scratchpad. To show me something, give the path or send the file.
+
 ## claude-mem can fill the disk (observer self-recording loop)
 
 The claude-mem plugin's background observer runs headless `claude` sessions in
