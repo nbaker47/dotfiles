@@ -19,8 +19,7 @@ placeholder. Keep it as the final line of the response.
 
 I run several agents at once. Coordinate through **Agent Teams**, not a shared file:
 use `SendMessage` to hand off, flag conflicts, and report status, and the shared task
-list to claim lanes. Within a bakr session teammates spawn as visible panes, so the
-team roster is the picture of who is doing what.
+list to claim lanes.
 
 The old `~/.claude/comm/` status-file convention is **retired** — Agent Teams replaces
 it. Do not create or read `~/.claude/comm/` files.
