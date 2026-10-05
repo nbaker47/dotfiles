@@ -61,4 +61,28 @@ fi
 model_seg=""
 [ -n "$model" ] && model_seg=" ${CYAN}${model}${RESET}"
 
-printf "${GREEN}[%s]${RESET}${YELLOW}%s${RESET}%b%b" "$dir" "$git_branch" "$k8s" "$model_seg"
+# Usage: plan limits (5-hour and weekly windows) and this session's context window.
+# rate_limits only exists for Pro/Max accounts and only after the first response, and
+# each window can be missing on its own, so every part is optional.
+RED='\033[1;31m'
+DIM='\033[2m'
+pct_seg() {  # label, percentage -> " label NN%" coloured green / yellow (>=70) / red (>=90)
+  [ -z "$2" ] && return
+  local n color
+  n=$(printf '%.0f' "$2")
+  if [ "$n" -ge 90 ]; then color="$RED"; elif [ "$n" -ge 70 ]; then color="$YELLOW"; else color="$GREEN"; fi
+  printf ' %b%s %s%%%b' "$color" "$1" "$n" "$RESET"
+}
+five=$(echo "$input" | jq -r '.rate_limits.five_hour.used_percentage // empty')
+five_reset=$(echo "$input" | jq -r '.rate_limits.five_hour.resets_at // empty')
+week=$(echo "$input" | jq -r '.rate_limits.seven_day.used_percentage // empty')
+ctx=$(echo "$input" | jq -r '.context_window.used_percentage // empty')
+usage_seg="$(pct_seg 5h "$five")"
+if [ -n "$five" ] && [ -n "$five_reset" ]; then
+  # BSD date (macOS) first, GNU date as the fallback
+  at=$(date -r "$five_reset" +%H:%M 2>/dev/null || date -d "@$five_reset" +%H:%M 2>/dev/null)
+  [ -n "$at" ] && usage_seg="${usage_seg}${DIM}→${at}${RESET}"
+fi
+usage_seg="${usage_seg}$(pct_seg wk "$week")$(pct_seg ctx "$ctx")"
+
+printf "${GREEN}[%s]${RESET}${YELLOW}%s${RESET}%b%b%b" "$dir" "$git_branch" "$k8s" "$model_seg" "$usage_seg"
