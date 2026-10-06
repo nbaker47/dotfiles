@@ -105,3 +105,19 @@ Jul 2026, then Sep 2026, when `~/.claude-mem` reached 147 GB (`chroma/` 106 GB,
   transcripts in `~/.claude/projects/-Users-user--claude-mem-observer-sessions/` are also throwaway;
   delete any older than a day.
 - **Full write-up:** `~/Code/docs/claude-mem-observer-loop.md`.
+
+## Cloud accounts live in one Google Sheet - read it, keep it current
+
+The inventory of every cloud environment I have (AWS, GCP, Expo), which email each one logs in
+with, which billing account pays, and the monthly bill is the Google Sheet
+**Cloud accounts and monthly bills**, in the Drive of nathan.baker.2647@gmail.com:
+https://docs.google.com/spreadsheets/d/1BxiQsKKczgOitNkE8C6edDIYzA_jrXnY1Rsa1jPha9A/edit
+
+- **Read it first** whenever a task needs to know where something is hosted, which account or
+  email owns a project, or what something costs. Do not guess from the active `gcloud` / `aws`
+  profile; several accounts are logged in at once.
+- **Update it** in the same piece of work whenever we create a new cloud account, billing account
+  or project, move a project between billing accounts, change a plan, or tear something down.
+  Add or edit the row (accounts table at the top, GCP projects table below), fill in the login
+  email, and note the source and date in the notes column.
+- Edit the existing file in place so the link stays the same; never create a second copy.
