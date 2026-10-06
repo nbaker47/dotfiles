@@ -54,6 +54,7 @@ brew "pandoc"
 brew "poppler"       # pdftotext, pdfimages
 
 # ── Casks ─────────────────────────────────────────────────────────────────────
+cask "alt-tab"           # Windows-style window switcher on cmd+tab
 cask "codex"             # OpenAI coding agent
 cask "docker-desktop"    # also supplies /usr/local/bin/kubectl for the `k` alias
 cask "gcloud-cli"
