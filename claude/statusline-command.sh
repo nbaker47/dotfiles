@@ -5,6 +5,9 @@
 # The trailing "$>" prompt marker from the original PS1 is dropped (no shell to type into).
 
 input=$(cat)
+# Cache rate limits and context window for external monitors
+echo "$input" | jq -c '{rate_limits, context_window, model, cwd: (.workspace.current_dir // .cwd), updated_at: now}' > ~/.cache/claude-rate-limits.json 2>/dev/null
+
 cwd=$(echo "$input" | jq -r '.workspace.current_dir // .cwd // empty')
 [ -z "$cwd" ] && cwd="$PWD"
 model=$(echo "$input" | jq -r '.model.display_name // empty')
@@ -85,4 +88,7 @@ if [ -n "$five" ] && [ -n "$five_reset" ]; then
 fi
 usage_seg="${usage_seg}$(pct_seg wk "$week")$(pct_seg ctx "$ctx")"
 
-printf "${GREEN}[%s]${RESET}${YELLOW}%s${RESET}%b%b%b" "$dir" "$git_branch" "$k8s" "$model_seg" "$usage_seg"
+printf "${GREEN}[%s]${RESET}${YELLOW}%s${RESET}%b%b" "$dir" "$git_branch" "$k8s" "$model_seg"
+# Usage goes on its own line underneath so a long first line doesn't push it off the right edge.
+# Drop the leading space pct_seg adds so the second line starts flush left.
+[ -n "$usage_seg" ] && printf "\n%b" "${usage_seg# }"

@@ -1,13 +1,14 @@
 {
   "env": {
-    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"
+    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1",
+    "CLAUDE_CODE_DISABLE_TERMINAL_TITLE": "1"
   },
   "attribution": {
     "commit": "",
     "pr": ""
   },
   "includeCoAuthoredBy": false,
-  "model": "claude-fable-5-1[1m]",
+  "model": "sonnet",
   "hooks": {
     "SessionStart": [
       {
@@ -42,6 +43,88 @@
           }
         ]
       }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"/Users/user/.config/cmux/conductor-sidebar/cmux-status.sh\" running",
+            "timeout": 5,
+            "async": true
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"/Users/user/.config/cmux/conductor-sidebar/cmux-status.sh\" running",
+            "timeout": 5,
+            "async": true
+          }
+        ],
+        "matcher": "*"
+      }
+    ],
+    "SubagentStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"/Users/user/.config/cmux/conductor-sidebar/cmux-status.sh\" busy",
+            "timeout": 5,
+            "async": true
+          }
+        ]
+      }
+    ],
+    "SubagentStop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"/Users/user/.config/cmux/conductor-sidebar/cmux-status.sh\" busy",
+            "timeout": 5,
+            "async": true
+          }
+        ]
+      }
+    ],
+    "Notification": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"/Users/user/.config/cmux/conductor-sidebar/cmux-status.sh\" waiting",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"/Users/user/.config/cmux/conductor-sidebar/cmux-status.sh\" ready",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "SessionEnd": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"/Users/user/.config/cmux/conductor-sidebar/cmux-status.sh\" clear",
+            "timeout": 5
+          }
+        ]
+      }
     ]
   },
   "statusLine": {
@@ -61,8 +144,39 @@
       }
     }
   },
+  "feedbackDrafts": "off",
   "effortLevel": "high",
   "tui": "fullscreen",
   "skipDangerousModePermissionPrompt": true,
-  "teammateMode": "tmux"
+  "teammateMode": "tmux",
+  "agentPushNotifEnabled": true,
+  "autoMode": {
+    "environment": [
+      "### Org-wide",
+      "**Organization**: None configured",
+      "**Cloud provider(s)**: None configured",
+      "**Repository visibility**: Not queryable here — this is the home directory (/Users/user), no remotes configured, no tracked files. Treat as a non-repo working directory; apply repo-visibility heuristics only within other repos as encountered.",
+      "**Internal sharing / snippet hosting**: None configured — treat public paste/gist services as outside the trust boundary",
+      "**Secrets management**: None configured",
+      "**Default / protected branches**: None configured (no git remotes in this working directory)",
+      "**CI/CD deploy targets**: None configured",
+      "**Network posture**: None configured",
+      "**Host containment**: None configured — assume Claude Code runs on an ordinary developer machine with open internet",
+      "**Source control**: The trusted repo and its remote(s) only (no additional orgs configured) — no remotes configured in this working directory",
+      "**Trusted internal domains**: None configured",
+      "**Trusted cloud buckets**: None configured — bucket config scan failed to complete cleanly; treat as unavailable, not absent",
+      "**Key internal services**: None configured",
+      "**Internal package registry**: None configured",
+      "**Sensitive data locations & audiences**: any file or store holding personal data, confidential business data, credentials, regulated data, or similarly sensitive material; preserve exact handles when known and share only with audiences cleared at the [named+specifics] bar",
+      "**Data retention / declassification**: None configured",
+      "**Sensitive remote targets**: any namespace, host, or container whose name carries `prod` or `production` as a whole word or name segment — note k8s namespaces seen in this project's transcripts (`herdr`, `machdep`) do not themselves match this pattern",
+      "**Protected deployment namespaces / environments**: None configured — fall back to the Sensitive remote targets heuristic",
+      "**Protected IaC scopes**: IAM, RBAC, networking, quota, and node-pool resources; anything whose name or tag carries `prod` or `production` as a whole word or name segment",
+      "### User-specific",
+      "**Primary use of Claude Code**: software development, plus personal/hobby automation (Mac system tooling, email drafting, multi-agent coordination) per ~/.claude/CLAUDE.md",
+      "**Trusted repo**: The working directory is /Users/user with no git remotes configured — there is no trusted repo in scope for this session; treat any actual project work as happening in whichever repo under ~/Code is opened directly",
+      "**Org-specific CLIs**: None configured",
+      "Routine under ~/Code/ prefix: worktrees belong in ~/worktrees/<repo>/<name>, never nested in or sibling to ~/Code checkouts, per ~/.claude/CLAUDE.md"
+    ]
+  }
 }
